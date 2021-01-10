@@ -35,6 +35,17 @@ public final class SwiftyNifti {
         
     }
     
+    public static func getData(for url: URL) throws -> [[[PixelData]]] {
+        do {
+            let header = try SwiftyNifti.getHeader(for: url)
+            let binReader = try BinaryReader(data: FileHandle(forReadingFrom: url).availableData)
+            let pixeldata = try binReader.getPixelData(using: header)
+            return pixeldata
+        } catch {
+            throw error
+        }
+    }
+    
     public func printHeader() {
         guard let headerBytes = FileHandle.readHeaderBytes(from: url) else {
             fatalError("Could not read header bytes from specified url")

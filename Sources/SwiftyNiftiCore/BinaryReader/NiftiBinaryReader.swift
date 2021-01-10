@@ -180,6 +180,51 @@ extension NiftiBinaryReader {
             }
         }
     }
+    
+    func getPixelData(using nim: NiftiHeaderV1,
+                      from newData: Data? = nil) throws -> [[[PixelData]]] {
+        if newData != nil { self.data = newData }
+        
+        var arr = [[[PixelData]]].init(
+            repeating: [[PixelData]].init(
+                repeating: [PixelData].init(
+                    repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
+        
+        var count: Int = 0
+        for z in 0 ..< nim.nz {
+            for y in 0 ..< nim.ny {
+                for x in 0 ..< nim.nx {
+                    let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
+                    switch nim.niftiDatatype {
+                    case .uint8:
+                        let val: UInt8 = readValue(at: seekVal)
+                        arr[x][y][z].r = val
+                        arr[x][y][z].g = val
+                        arr[x][y][z].b = val
+                        
+                    default:
+                        throw SwiftyNifti.Error.invalidStringPath
+                    }
+                    count += 1
+                }
+            }
+        }
+        return arr
+    }
+}
+
+public struct PixelData {
+    var a: UInt8
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+    
+    init(a: UInt8 = 255, r: UInt8, g: UInt8, b: UInt8) {
+        self.a = a
+        self.r = r
+        self.g = g
+        self.b = b
+    }
 }
 //public func loadBricks() -> NiftiSpacialData {
 //    var nim = self.header
