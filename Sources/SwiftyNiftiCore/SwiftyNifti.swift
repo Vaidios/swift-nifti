@@ -19,6 +19,22 @@ public final class SwiftyNifti {
     public func run() {
         print(url.path)
     }
+    
+    public static func getHeader(for url: URL) throws -> NiftiHeaderV1 {
+        guard let headerBytes = FileHandle.readHeaderBytes(from: url) else {
+            throw Error.invalidStringPath
+        }
+        let binReader = BinaryReader(data: headerBytes)
+        
+        do {
+            let header = try binReader.getNiftiV1HeaderInfo()
+            return header
+        } catch {
+            throw error
+        }
+        
+    }
+    
     public func printHeader() {
         guard let headerBytes = FileHandle.readHeaderBytes(from: url) else {
             fatalError("Could not read header bytes from specified url")

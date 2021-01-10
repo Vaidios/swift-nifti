@@ -7,7 +7,7 @@
 
 import Foundation
 
-class NiftiHeaderV1 {
+public class NiftiHeaderV1 {
     public init() { }
     
     var sizeof_hdr: Int32 = 0 // 0 offset
@@ -79,7 +79,7 @@ class NiftiHeaderV1 {
     var magic: [UInt8] = []
 }
 extension NiftiHeaderV1: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         return """
             Intent code - \(intent_code)
             Dimensions - \(dim)
