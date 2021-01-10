@@ -2,37 +2,34 @@ import Foundation
 
 
 public final class SwiftyNifti {
-    private var arguments: [String]?
-    private var stringPath: String?
+    
+    private var url: URL
     
     var niftiHeader: NiftiHeaderV1?
-    
-    
-    public init(arguments: [String] = CommandLine.arguments) {
-        self.arguments = arguments
-    }
 
-    public init(stringPath: String) {
-        self.stringPath = stringPath
+    convenience public init(stringPath: String) {
+        let url = URL(fileURLWithPath: stringPath)
+        self.init(url: url)
     }
     
-    public func run() throws {
-        guard let url = URL(string: stringPath!) else { throw Error.invalidStringPath }
+    public init(url: URL) {
+        self.url = url
+    }
+    
+    public func run() {
         print(url.path)
     }
     public func printHeader() {
-        if let url = URL(string: stringPath!) {
-            guard let headerBytes = FileHandle.readHeaderBytes(from: url) else {
-                fatalError("Could not read header bytes from specified url")
-            }
-            let binReader = BinaryReader(data: headerBytes)
-            
-            do {
-                niftiHeader = try binReader.getNiftiV1HeaderInfo()
-                print(niftiHeader!)
-            } catch {
-                print(error)
-            }
+        guard let headerBytes = FileHandle.readHeaderBytes(from: url) else {
+            fatalError("Could not read header bytes from specified url")
+        }
+        let binReader = BinaryReader(data: headerBytes)
+        
+        do {
+            niftiHeader = try binReader.getNiftiV1HeaderInfo()
+            print(niftiHeader!)
+        } catch {
+            print(error)
         }
     }
     
@@ -42,7 +39,7 @@ public final class SwiftyNifti {
         switch nim.niftiDatatype {
         case .uint8:
             var arr = [[[UInt8]]].init(repeating: [[UInt8]].init(repeating: [UInt8].init(repeating: 0, count: nim.nz), count: nim.ny), count: nim.nx)
-            let url = URL(string: stringPath!)!
+//            let url = URL(string: stringPath!)!
             let binReader = try! BinaryReader(data: FileHandle(forReadingFrom: url).availableData)
             binReader.readSpacialData(using: nim, into: &arr)
             print("First row \(arr.first!.first!)")
