@@ -10,73 +10,73 @@ import Foundation
 public class NiftiHeaderV1 {
     public init() { }
     
-    var sizeof_hdr: Int32 = 0 // 0 offset
-    var dim_info: UInt8 = 0
+    public var sizeof_hdr: Int32 = 0 // 0 offset
+    public var dim_info: UInt8 = 0
+
+    public var ndim: Int { get { return Int(dim[0]) } set { dim[0] = Int16(newValue) } }
+    public var nx: Int { return Int(dim[1]) }
+    public var ny: Int { return Int(dim[2]) }
+    public var nz: Int { return Int(dim[3]) }
+    public var nt: Int16 { get { return dim[4] } set { dim[4] = newValue } }
+    public var nu: Int16 { get { return dim[5] } set { dim[5] = newValue } }
+    public var nv: Int16 { get { return dim[6] } set { dim[6] = newValue } }
+    public var nw: Int16 { get { return dim[7] } set { dim[7] = newValue } }
+    public var dim: [Int16] = [] // 40
     
-    var ndim: Int { get { return Int(dim[0]) } set { dim[0] = Int16(newValue) } }
-    var nx: Int { return Int(dim[1]) }
-    var ny: Int { return Int(dim[2]) }
-    var nz: Int { return Int(dim[3]) }
-    var nt: Int16 { get { return dim[4] } set { dim[4] = newValue } }
-    var nu: Int16 { get { return dim[5] } set { dim[5] = newValue } }
-    var nv: Int16 { get { return dim[6] } set { dim[6] = newValue } }
-    var nw: Int16 { get { return dim[7] } set { dim[7] = newValue } }
-    var dim: [Int16] = [] // 40
-    
-    var intent_p1: Float = 0
-    var intent_p2: Float = 0
-    var intent_p3: Float = 0
-    var intent_code: Int16 = 0
+    public var intent_p1: Float = 0
+    public var intent_p2: Float = 0
+    public var intent_p3: Float = 0
+    public var intent_code: Int16 = 0
     
     public var niftiDatatype: NiftiType { return NiftiType(rawValue: datatype)! }
-    var datatype: Int16 = 0 //70
-    var bitpix: Int16 = 0
-    var slice_start: Int16 = 0
+    public var datatype: Int16 = 0 //70
+    public var bitpix: Int16 = 0
+    public var slice_start: Int16 = 0
     
-    var dx: Float { return pixdim[1] * Float(nx) }
-    var dy: Float { return pixdim[2] * Float(ny) }
-    var dz: Float { return pixdim[3] * Float(nz) }
-    var dt: Float { return pixdim[4] * Float(nt) }
-    var du: Float { return pixdim[5] * Float(nu) }
-    var dv: Float { return pixdim[6] * Float(nv) }
-    var dw: Float { return pixdim[7] * Float(nw) }
-    var pixdim: [Float] = []
+    public var dx: Float { return pixdim[1] * Float(nx) }
+    public var dy: Float { return pixdim[2] * Float(ny) }
+    public var dz: Float { return pixdim[3] * Float(nz) }
+    public var dt: Float { return pixdim[4] * Float(nt) }
+    public var du: Float { return pixdim[5] * Float(nu) }
+    public var dv: Float { return pixdim[6] * Float(nv) }
+    public var dw: Float { return pixdim[7] * Float(nw) }
+    public var pixdim: [Float] = []
     
-    var nvox: Int = 0
-    var vox_offset: Float = 0
-    var scl_slope: Float = 0
-    var scl_inter: Float = 0
-    var slice_end: Int16 = 0
-    var slice_code: UInt8 = 0
-    var xyzt_units: UInt8 = 0
-    var cal_max: Float = 0
-    var cal_min: Float = 0
-    var slice_duration: Float = 0
-    var toffset: Float = 0
+    public var nvox: Int = 0
+    public var vox_offset: Float = 0
+    public var scl_slope: Float = 0
+    public var scl_inter: Float = 0
+    public var slice_end: Int16 = 0
+    public var slice_code: UInt8 = 0
+    public var xyzt_units: UInt8 = 0
+    public var cal_max: Float = 0
+    public var cal_min: Float = 0
+    public var slice_duration: Float = 0
+    public var toffset: Float = 0
     
-    var glmax: Int32 = 0
-    var glmin: Int32 = 0
+    public var glmax: Int32 = 0
+    public var glmin: Int32 = 0
     
-    var descript: [UInt8] = []
-    var aux_file: [UInt8] = []
+    public var descript: [UInt8] = []
+    public var aux_file: [UInt8] = []
     
-    var qform_code: Int16 = 0
-    var sform_code: Int16 = 0
+    public var qform_code: Int16 = 0
+    public var sform_code: Int16 = 0
     
-    var quatern_b: Float = 0
-    var quatern_c: Float = 0
-    var quatern_d: Float = 0
-    var qoffset_x: Float = 0
-    var qoffset_y: Float = 0
-    var qoffset_z: Float = 0
+    public var quatern_b: Float = 0
+    public var quatern_c: Float = 0
+    public var quatern_d: Float = 0
+    public var qoffset_x: Float = 0
+    public var qoffset_y: Float = 0
+    public var qoffset_z: Float = 0
     
-    var srow_x: [Float] = []
-    var srow_y: [Float] = []
-    var srow_z: [Float] = []
-    
-    var intent_name: [UInt8] = []
+    public var srow_x: [Float] = []
+    public var srow_y: [Float] = []
+    public var srow_z: [Float] = []
 
-    var magic: [UInt8] = []
+    public var intent_name: [UInt8] = []
+    
+    public var magic: [UInt8] = []
 }
 extension NiftiHeaderV1: CustomStringConvertible {
     public var description: String {
