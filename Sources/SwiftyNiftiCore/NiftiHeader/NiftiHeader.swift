@@ -89,7 +89,6 @@ extension NiftiHeaderV1: CustomStringConvertible {
             Slice end - \(slice_end)
             Voxel dimens - \(pixdim)
             Voxel offset - \(vox_offset)
-
         """
     }
 }
@@ -106,7 +105,6 @@ extension NiftiHeaderV1 {
          })),
          ("qform", String(qform_code)),
          ("sform", String(sform_code)),
-         
         ]
     }
 }
