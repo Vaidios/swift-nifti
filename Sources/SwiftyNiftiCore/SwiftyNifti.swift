@@ -32,16 +32,29 @@ public final class SwiftyNifti {
         }
     }
     
-    public static func getYFlippedData(for url: URL) throws {
+    public static func getZYFlippedData(for url: URL) throws {
         
         do {
+            let header = try Self.getHeader(for: url)
             let data = try Self.getData(for: url)
-            
-            
-            
-            
+            var arr = Self.getEmptyPixelArr(nx: header.nz, ny: header.ny, nz: header.nx)
+            for x in 0 ..< header.nx {
+                for y in 0 ..< header.ny {
+                    for z in 0 ..< header.nz {
+                        arr[z][y][x] = data[x][y][z]
+                    }
+                }
+            } 
         } catch {
             throw error
         }
+    }
+    
+    private static func getEmptyPixelArr(nx: Int, ny: Int, nz: Int) -> [[[PixelData]]] {
+        let arr = [[[PixelData]]].init(
+            repeating: [[PixelData]].init(
+                repeating: [PixelData].init(
+                    repeating: PixelData(r: 0, g: 0, b: 0), count: nz), count: ny), count: nx)
+        return arr
     }
 }

@@ -118,9 +118,8 @@ extension NiftiHeaderV1 {
          ("Q offset X", "\(qoffset_x)"),
          ("Q offset Y", "\(qoffset_y)"),
          ("Q offset Z", "\(qoffset_z)"),
-         ("Intent name", "\(intent_nameString)"),
-         ("Magic string", "\(magicString)")
-         
+         ("Intent name", intent_nameString),
+         ("Magic string", magicString)
         ]
     }
 }
