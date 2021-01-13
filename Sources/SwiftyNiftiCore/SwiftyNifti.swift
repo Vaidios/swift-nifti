@@ -32,7 +32,7 @@ public final class SwiftyNifti {
         }
     }
     
-    public static func getZYFlippedData(for url: URL) throws {
+    public static func getZYFlippedData(for url: URL) throws -> [[[PixelData]]] {
         
         do {
             let header = try Self.getHeader(for: url)
@@ -44,7 +44,8 @@ public final class SwiftyNifti {
                         arr[z][y][x] = data[x][y][z]
                     }
                 }
-            } 
+            }
+            return arr
         } catch {
             throw error
         }
