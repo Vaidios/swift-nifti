@@ -7,15 +7,13 @@
 
 import Foundation
 
-class BinaryReader: NiftiBinaryReader {
-    internal var data: Data!
-    var isByteSwapped: Bool = false
-    init(data: Data? = nil) {
-        self.data = data
-        
-    }
+class BinaryReader {
     
-    func changeReadData(to data: Data) {
+    var isByteSwapped: Bool = false
+    
+    private let data: Data
+    
+    init(data: Data) {
         self.data = data
     }
     
@@ -23,15 +21,10 @@ class BinaryReader: NiftiBinaryReader {
         let size = MemoryLayout<Type>.size
         
         let subdata = self.data.subdata(in: offset ..< offset + size)
+        
         var dataToCast: Data
-        if offset == 72 {
-            print("Offset is \(offset) and size \(size)")
-            print("Size of Uint16 is \(MemoryLayout<Optional<UInt16>>.size)")
-            print(Array(subdata).bytesToHex(spacing: " "))
-            
-        }
         if isByteSwapped {
-            dataToCast = byteSwap(for: subdata)
+            dataToCast = byteSwap(subdata)
         } else {
             dataToCast = subdata
         }
@@ -53,7 +46,7 @@ class BinaryReader: NiftiBinaryReader {
         return values
     }
     
-    private func byteSwap(for data: Data) -> Data {
+    private func byteSwap(_ data: Data) -> Data {
         return Data(data.reversed())
     }
 }

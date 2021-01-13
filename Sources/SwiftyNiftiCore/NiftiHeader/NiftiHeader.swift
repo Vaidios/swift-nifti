@@ -58,6 +58,8 @@ public class NiftiHeaderV1 {
     public var glmin: Int32 = 0
     
     public var descript: [UInt8] = []
+    var descriptString: String { return String(bytes: descript, encoding: .utf8) ?? ""}
+    
     public var aux_file: [UInt8] = []
     
     public var qform_code: Int16 = 0
@@ -96,15 +98,21 @@ extension NiftiHeaderV1: CustomStringConvertible {
 extension NiftiHeaderV1 {
     public var dataArray: [(String, String)] {
         [("Size of header", String(sizeof_hdr) + " Bytes"),
-         ("Dimension sizes", dim.reduce("", { (res, dim) -> String in
-            return res + String(dim) + "x"
-         })),
+         ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
          ("Datatype", datatypeString),
          ("Pixel dimensions", pixdim.reduce("", { (res, dim) -> String in
             return res + String(dim) + "x"
          })),
          ("qform", String(qform_code)),
          ("sform", String(sform_code)),
+         ("Description", descriptString),
+         ("Intent P1", "\(intent_p1)"),
+         ("Intent P2", "\(intent_p2)"),
+         ("Intent P3", "\(intent_p3)"),
+         ("Quaternion B", "\(quatern_b)"),
+         ("Quaternion C", "\(quatern_c)"),
+         ("Quaternion D", "\(quatern_d)"),
+         
         ]
     }
 }
@@ -183,6 +191,29 @@ public enum NiftiType: Int16 {
     case complex128 = 1792
     case complex256 = 2048
     case rgba32 = 2304
+}
+
+extension NiftiType {
+    var bytesPerVoxel: Int {
+        switch self {
+        case .uint8: return 1
+        case .int16: return 2
+        case .int32: return 4
+        case .float32: return 4
+        case .float64: return 8
+        case .rgb24: return 3
+        case .int8: return 1
+        case .uint16: return 2
+        case .uint32: return 4
+        case .int64: return 8
+        case .uint64: return 8
+        case .float128: return 16
+        case .complex64: return 8 //Check if it is correct
+        case .complex128: return 16 //Check if it is correct
+        case .complex256: return 32 //Check if it is correct
+        case .rgba32: return 4 //Check if it is correct
+        }
+    }
 }
 
 enum NiftiOrientation: CustomStringConvertible {
