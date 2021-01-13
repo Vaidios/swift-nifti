@@ -77,8 +77,10 @@ public class NiftiHeaderV1 {
     public var srow_z: [Float] = []
 
     public var intent_name: [UInt8] = []
+    var intent_nameString: String { return String(bytes: intent_name, encoding: .utf8) ?? ""}
     
     public var magic: [UInt8] = []
+    var magicString: String { return String(bytes: magic, encoding: .utf8) ?? ""}
 }
 extension NiftiHeaderV1: CustomStringConvertible {
     public var description: String {
@@ -109,9 +111,15 @@ extension NiftiHeaderV1 {
          ("Intent P1", "\(intent_p1)"),
          ("Intent P2", "\(intent_p2)"),
          ("Intent P3", "\(intent_p3)"),
+         ("Intent code", "\(intent_code)"),
          ("Quaternion B", "\(quatern_b)"),
          ("Quaternion C", "\(quatern_c)"),
          ("Quaternion D", "\(quatern_d)"),
+         ("Q offset X", "\(qoffset_x)"),
+         ("Q offset Y", "\(qoffset_y)"),
+         ("Q offset Z", "\(qoffset_z)"),
+         ("Intent name", "\(intent_nameString)"),
+         ("Magic string", "\(magicString)")
          
         ]
     }
