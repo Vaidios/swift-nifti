@@ -107,12 +107,12 @@ public final class SwiftyNifti {
         
         public func getCoronalData() -> [[[PixelData]]] {
             if let coronalData = self.coronalData { return coronalData }
-            var arr = SwiftyNifti.getEmptyPixelArr(nx: header.nx, ny: header.nz, nz: header.ny)
+            var arr = SwiftyNifti.getEmptyPixelArr(nx: header.nz, ny: header.nx, nz: header.ny)
             
             for y in 0 ..< header.ny {
-                for z in 0 ..< header.nz {
-                    for x in 0 ..< header.nx {
-                        arr[x][z][y] = originalData[x][y][z]
+                for x in 0 ..< header.nx {
+                    for z in 0 ..< header.nz {
+                        arr[z][x][y] = originalData[x][y][z]
                     }
                 }
             }
