@@ -112,7 +112,7 @@ public final class SwiftyNifti {
             for z in 0 ..< header.nz {
                 for x in 0 ..< header.nx {
                     for y in 0 ..< header.ny {
-                        arr[z][x][y] = originalData[x][y][z]
+                        arr[y][x][z] = originalData[x][y][z]
                     }
                 }
             }
