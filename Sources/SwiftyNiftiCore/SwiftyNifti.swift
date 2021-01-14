@@ -116,8 +116,8 @@ public final class SwiftyNifti {
                     }
                 }
             }
+            self.coronalData = arr
             return arr
         }
-        
     }
 }
