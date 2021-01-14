@@ -159,6 +159,8 @@ class NiftiV1BinaryReader: BinaryReader {
                     repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
         
         var count: Int = 0
+        var maxFloatVal: Float32 = 0
+        var minFloatVal: Float32 = 0
         for z in 0 ..< nim.nz {
             for y in 0 ..< nim.ny {
                 for x in 0 ..< nim.nx {
@@ -184,6 +186,14 @@ class NiftiV1BinaryReader: BinaryReader {
                     case .float32:
                         let val: Float32 = readValue(at: seekVal)
                         let uintval = UInt32(val)
+                        if val > maxFloatVal {
+                            maxFloatVal = val
+                            print("New max val \(maxFloatVal)")
+                        }
+                        if val < minFloatVal {
+                            minFloatVal = val
+                            print("New min val \(minFloatVal)")
+                        }
                         
                         let normalizedVal = (Float(uintval) / Float(UInt32.max)) * 255
                         arr[x][y][z].r = UInt8(normalizedVal)
