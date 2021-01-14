@@ -139,11 +139,20 @@ extension NiftiHeaderV1 {
     
     var datatypeString: String {
         switch NiftiType(rawValue: datatype) {
+        
         case .uint8: return "8-Bit UInt"
-        case .float32: return "32-Bit Float"
-        case .float64: return "64-Bit Float"
+        case .uint16: return "16-Bit UInt"
+        case .uint32: return "32-Bit UInt"
+        case .uint64: return "64-Bit UInt"
+            
+        case .int8: return "8-Bit Int"
         case .int16: return "16-Bit Int"
         case .int32: return "32-Bit Int"
+        case .int64: return "64-Bit Int"
+            
+        case .float32: return "32-Bit Float"
+        case .float64: return "64-Bit Float"
+        case .float128: return "128-Bit Float"
 
         default: return "Unknown"
         }
