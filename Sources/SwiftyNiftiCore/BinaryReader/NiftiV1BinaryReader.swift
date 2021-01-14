@@ -169,11 +169,17 @@ class NiftiV1BinaryReader: BinaryReader {
                         arr[x][y][z].r = val
                         arr[x][y][z].g = val
                         arr[x][y][z].b = val
+                    case .uint16:
+                        let val: UInt16 = readValue(at: seekVal)
+                        arr[x][y][z].r = UInt8(val)
+                        arr[x][y][z].g = UInt8(val)
+                        arr[x][y][z].b = UInt8(val)
                     case .int16:
                         let val: Int16 = readValue(at: seekVal)
                         arr[x][y][z].r = UInt8(val)
                         arr[x][y][z].g = UInt8(val)
                         arr[x][y][z].b = UInt8(val)
+
                     default:
                         throw BinaryError.unsupportedDataFormat
                     }
