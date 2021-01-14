@@ -150,13 +150,100 @@ class NiftiV1BinaryReader: BinaryReader {
         dims[0] = Int16(nDim)
     }
     
-    func getPixelData(using nim: NiftiHeaderV1,
-                      from newData: Data? = nil) throws -> [[[PixelData]]] {
+    func getPixelData(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+        
+        do {
+            switch nim.niftiDatatype {
+            case .uint8:
+                return try getPixelDataUInt8(using: nim)
+            case .uint16:
+                return try getPixelDataUInt16(using: nim)
+            case .int16:
+                return try getPixelDataInt16(using: nim)
+            case .float32:
+                return try getPixelDataFloat32(using: nim)
+            default:
+                throw BinaryError.unsupportedDataFormat
+            }
+        } catch {
+            throw error
+        }
+    }
+    
+    func getPixelDataUInt8(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
         
         var arr = [[[PixelData]]].init(
             repeating: [[PixelData]].init(
                 repeating: [PixelData].init(
                     repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
+        
+        var count: Int = 0
+        for z in 0 ..< nim.nz {
+            for y in 0 ..< nim.ny {
+                for x in 0 ..< nim.nx {
+                    let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
+                    let val: UInt8 = readValue(at: seekVal)
+                    arr[x][y][z].r = val
+                    arr[x][y][z].g = val
+                    arr[x][y][z].b = val
+                    count += 1
+                }
+            }
+        }
+        return arr
+    }
+    
+    func getPixelDataUInt16(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+        var arr = [[[PixelData]]].init(
+            repeating: [[PixelData]].init(
+                repeating: [PixelData].init(
+                    repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
+        
+        var count: Int = 0
+        for z in 0 ..< nim.nz {
+            for y in 0 ..< nim.ny {
+                for x in 0 ..< nim.nx {
+                    let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
+                    let val: UInt16 = readValue(at: seekVal)
+                    let normalizedVal = (Float(val) / Float(UInt16.max)) * 255
+                    arr[x][y][z].r = UInt8(normalizedVal)
+                    arr[x][y][z].g = UInt8(normalizedVal)
+                    arr[x][y][z].b = UInt8(normalizedVal)
+                    count += 1
+                }
+            }
+        }
+        return arr
+    }
+    func getPixelDataInt16(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+        var arr = [[[PixelData]]].init(
+            repeating: [[PixelData]].init(
+                repeating: [PixelData].init(
+                    repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
+        
+        var count: Int = 0
+        for z in 0 ..< nim.nz {
+            for y in 0 ..< nim.ny {
+                for x in 0 ..< nim.nx {
+                    let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
+                    let val: Int16 = readValue(at: seekVal)
+                    arr[x][y][z].r = UInt8(val)
+                    arr[x][y][z].g = UInt8(val)
+                    arr[x][y][z].b = UInt8(val)
+                    count += 1
+                }
+            }
+        }
+        return arr
+    }
+    
+    func getPixelDataFloat32(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+        var arr = [[[PixelData]]].init(
+            repeating: [[PixelData]].init(
+                repeating: [PixelData].init(
+                    repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
+        
+        var floatArr = [[[Float32]]].init(repeating: [[Float]].init(repeating: [Float].init(repeating: 0, count: nim.nz), count: nim.ny), count: nim.nx)
         
         var count: Int = 0
         var maxFloatVal: Float32 = 0
@@ -165,44 +252,28 @@ class NiftiV1BinaryReader: BinaryReader {
             for y in 0 ..< nim.ny {
                 for x in 0 ..< nim.nx {
                     let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
-                    switch nim.niftiDatatype {
-                    case .uint8:
-                        let val: UInt8 = readValue(at: seekVal)
-                        arr[x][y][z].r = val
-                        arr[x][y][z].g = val
-                        arr[x][y][z].b = val
-                    case .uint16:
-                        let val: UInt16 = readValue(at: seekVal)
-                        let normalizedVal = (Float(val) / Float(UInt16.max)) * 255
-                        arr[x][y][z].r = UInt8(normalizedVal)
-                        arr[x][y][z].g = UInt8(normalizedVal)
-                        arr[x][y][z].b = UInt8(normalizedVal)
-                    case .int16:
-                        let val: Int16 = readValue(at: seekVal)
-                        arr[x][y][z].r = UInt8(val)
-                        arr[x][y][z].g = UInt8(val)
-                        arr[x][y][z].b = UInt8(val)
-
-                    case .float32:
-                        let val: Float32 = readValue(at: seekVal)
-                        let uintval = UInt32(val)
-                        if val > maxFloatVal {
-                            maxFloatVal = val
-                            print("New max val \(maxFloatVal)")
-                        }
-                        if val < minFloatVal {
-                            minFloatVal = val
-                            print("New min val \(minFloatVal)")
-                        }
-                        
-                        let normalizedVal = (Float(uintval) / Float(UInt32.max)) * 255
-                        arr[x][y][z].r = UInt8(normalizedVal)
-                        arr[x][y][z].g = UInt8(normalizedVal)
-                        arr[x][y][z].b = UInt8(normalizedVal)
-                    default:
-                        throw BinaryError.unsupportedDataFormat
+                    let val: Float32 = readValue(at: seekVal)
+                    
+                    if val > maxFloatVal {
+                        maxFloatVal = val
+                        print("New max val \(maxFloatVal)")
                     }
+                    if val < minFloatVal {
+                        minFloatVal = val
+                        print("New min val \(minFloatVal)")
+                    }
+                    floatArr[x][y][z] = val
+                    
                     count += 1
+                }
+            }
+        }
+        arr = floatArr.map { (firstDim) -> [[PixelData]] in
+            return firstDim.map { (secondDim) -> [PixelData] in
+                return secondDim.map { thirdDim -> PixelData in
+                    let normalizedVal = thirdDim / maxFloatVal
+                    let val = UInt8(normalizedVal * 255)
+                    return PixelData(r: val, g: val, b: val)
                 }
             }
         }
