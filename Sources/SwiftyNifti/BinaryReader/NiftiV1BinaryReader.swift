@@ -1,10 +1,3 @@
-//
-//  NiftiV1BinaryReader.swift
-//  SwiftyNifti
-//
-//  Created by Kamil Sosna on 13/01/2021.
-//
-
 import Foundation
 
 enum BinaryError: Swift.Error {

@@ -1,9 +1,7 @@
 import XCTest
-import Foundation
+import Testing
 
-final class SwiftyNiftiTests: XCTestCase {
-    
-    func testExample() throws {
-        
-    }
+@Test
+func TextExample() async throws {
+  #expect(1 == 2)
 }

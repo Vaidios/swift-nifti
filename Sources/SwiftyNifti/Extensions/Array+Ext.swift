@@ -1,10 +1,3 @@
-//
-//  ArrayExt.swift
-//  SwiftyNifti
-//
-//  Created by Kamil Sosna on 04/12/2020.
-//
-
 import Foundation
 
 extension Array where Element == UInt8 {

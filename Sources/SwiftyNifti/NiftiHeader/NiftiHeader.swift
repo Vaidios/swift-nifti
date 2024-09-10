@@ -242,7 +242,6 @@ enum NiftiOrientation: CustomStringConvertible {
         case .A2P: return "Anterior-to-Posterior"
         case .I2S: return "Inferior-to-Superior"
         case .S2I: return "Superior-to-Inferior"
-//        default: return "Unknown"
         }
     }
 }
