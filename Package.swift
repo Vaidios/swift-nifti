@@ -5,15 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftyNifti",
-
     products: [
-        .library(name: "SwiftyNifti", targets: ["SwiftyNiftiCore"])
+        .library(name: "SwiftyNifti", targets: ["SwiftyNifti"])
     ],
     targets: [
         .target(
-            name: "SwiftyNifti",
-            dependencies: ["SwiftyNiftiCore"]),
-        .target(name: "SwiftyNiftiCore"),
+            name: "SwiftyNifti"
+        ),
         .testTarget(
             name: "SwiftyNiftiTests",
             dependencies: ["SwiftyNifti"]),
