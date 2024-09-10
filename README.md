@@ -12,13 +12,18 @@ This package makes it easier to read nifti(.nii) files using native Swift code
 You can use [The Swift Package Manager](https://swift.org/package-manager) to install `SwiftyNifti` by adding the proper description to your `Package.swift` file:
 
 ```swift
-// swift-tools-version:4.0
+// swift-tools-version:5.9
 import PackageDescription
 
 let package = Package(
     name: "YOUR_PROJECT_NAME",
     dependencies: [
-        .package(url: "https://github.com/Vaidios/SwiftyNifti.git", from: "4.0.0"),
+        .package(url: "https://github.com/Vaidios/swift-nifti.git", branch: "main"),
+    ],
+    targets: [
+        .target(
+            name: "YOUR_TARGET", dependencies: [.product(name: "SwiftyNifti", package: "swift-nifti")]
+        )
     ]
 )
 ```
