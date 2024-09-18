@@ -1,16 +1,6 @@
 import Foundation
 
 public struct SwiftyNifti {
-    
-  public static func getHeader(for url: URL) throws -> NiftiHeaderV1 {
-    guard let fileBytes = FileHandle.readHeaderBytes(from: url) else {
-      throw SwiftyNiftiError.invalidStringPath
-    }
-    let niftiBinReader = NiftiV1BinaryReader(data: fileBytes)
-    
-    let header = try niftiBinReader.getHeader()
-    return header
-  }
   
   public static func getData(for url: URL) throws -> [[[PixelData]]] {
     do {
@@ -27,7 +17,7 @@ public struct SwiftyNifti {
   public static func getZYFlippedData(for url: URL) throws -> [[[PixelData]]] {
     
     do {
-      let header = try Self.getHeader(for: url)
+      let header = try NiftiV1(url: url).header
       let data = try Self.getData(for: url)
       var arr = Self.getEmptyPixelArr(nx: header.nz, ny: header.ny, nz: header.nx)
       for x in 0 ..< header.nx {
@@ -68,13 +58,13 @@ public struct SwiftyNifti {
   
   public class NiftiVolume {
     
-    public let header: NiftiHeaderV1
+    public let header: NiftiV1.Header
     
     private let originalData: [[[PixelData]]]
     private var axialData: [[[PixelData]]]?
     private var coronalData: [[[PixelData]]]?
     
-    internal init(header: NiftiHeaderV1, data: [[[PixelData]]]) {
+    internal init(header: NiftiV1.Header, data: [[[PixelData]]]) {
       self.header = header
       self.originalData = data
     }

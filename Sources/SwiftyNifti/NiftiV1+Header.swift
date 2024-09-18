@@ -1,14 +1,5 @@
-//
-//  NiftiHeader.swift
-//  SwiftyNifti
-//
-//  Created by Kamil Sosna on 02/12/2020.
-//
-
-import Foundation
-
-public class NiftiHeaderV1 {
-    public init() { }
+extension NiftiV1 {
+  public struct Header {
     
     public var sizeof_hdr: Int32 = 0 // 0 offset
     public var dim_info: UInt8 = 0
@@ -81,8 +72,10 @@ public class NiftiHeaderV1 {
     
     public var magic: [UInt8] = []
     var magicString: String { return String(bytes: magic, encoding: .utf8) ?? ""}
+  }
 }
-extension NiftiHeaderV1: CustomStringConvertible {
+
+extension NiftiV1.Header: CustomStringConvertible {
     public var description: String {
         return """
             Intent code - \(intent_code)
@@ -97,7 +90,7 @@ extension NiftiHeaderV1: CustomStringConvertible {
     }
 }
 
-extension NiftiHeaderV1 {
+extension NiftiV1.Header {
     public var dataArray: [(String, String)] {
         [("Size of header", String(sizeof_hdr) + " Bytes"),
          ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
@@ -124,7 +117,7 @@ extension NiftiHeaderV1 {
     }
 }
 
-extension NiftiHeaderV1 {
+extension NiftiV1.Header {
     var fileLength: Int {
         var total = 1
         for i in 1 ... Int(dim[0]) {

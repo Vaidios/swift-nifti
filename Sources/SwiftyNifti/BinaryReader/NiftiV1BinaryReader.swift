@@ -1,15 +1,15 @@
 import Foundation
 
-enum BinaryError: Swift.Error {
+enum BinaryError: Error {
     case invalidHeaderSize
     case unsupportedDataFormat
 }
 
 class NiftiV1BinaryReader: BinaryReader {
     
-    func getHeader() throws -> NiftiHeaderV1 {
+  func getHeader() throws -> NiftiV1.Header {
         
-        let hdr = NiftiHeaderV1()
+        var hdr = NiftiV1.Header()
         
         //Checking endianess
         var sizeOfHdr: Int32 = readValue(at: 0)
@@ -143,7 +143,7 @@ class NiftiV1BinaryReader: BinaryReader {
         dims[0] = Int16(nDim)
     }
     
-    func getPixelData(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+  func getPixelData(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         
         do {
             switch nim.niftiDatatype {
@@ -163,7 +163,7 @@ class NiftiV1BinaryReader: BinaryReader {
         }
     }
     
-    func getPixelDataUInt8(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+    func getPixelDataUInt8(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         
         var arr = [[[PixelData]]].init(
             repeating: [[PixelData]].init(
@@ -186,7 +186,7 @@ class NiftiV1BinaryReader: BinaryReader {
         return arr
     }
     
-    func getPixelDataUInt16(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+    func getPixelDataUInt16(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         var arr = [[[PixelData]]].init(
             repeating: [[PixelData]].init(
                 repeating: [PixelData].init(
@@ -208,7 +208,7 @@ class NiftiV1BinaryReader: BinaryReader {
         }
         return arr
     }
-    func getPixelDataInt16(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+    func getPixelDataInt16(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         var arr = [[[PixelData]]].init(
             repeating: [[PixelData]].init(
                 repeating: [PixelData].init(
@@ -230,7 +230,7 @@ class NiftiV1BinaryReader: BinaryReader {
         return arr
     }
     
-    func getPixelDataFloat32(using nim: NiftiHeaderV1) throws -> [[[PixelData]]] {
+  func getPixelDataFloat32(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         var arr = [[[PixelData]]].init(
             repeating: [[PixelData]].init(
                 repeating: [PixelData].init(
