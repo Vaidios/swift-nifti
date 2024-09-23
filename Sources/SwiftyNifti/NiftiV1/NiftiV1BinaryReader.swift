@@ -1,13 +1,8 @@
 import Foundation
 
-enum BinaryError: Error {
-    case invalidHeaderSize
-    case unsupportedDataFormat
-}
-
-class NiftiV1BinaryReader: BinaryReader {
+final class NiftiV1BinaryReader: BinaryReader {
     
-  func getHeader() throws -> NiftiV1.Header {
+  func getHeader() throws(NiftiV1Error) -> NiftiV1.Header {
         
         var hdr = NiftiV1.Header()
         
@@ -19,7 +14,7 @@ class NiftiV1BinaryReader: BinaryReader {
         }
         
         if sizeOfHdr != 348 {
-            throw BinaryError.invalidHeaderSize
+            throw .invalidHeaderSize
         }
         
         hdr.sizeof_hdr = sizeOfHdr
@@ -27,7 +22,7 @@ class NiftiV1BinaryReader: BinaryReader {
         hdr.dim_info = readValue(at: 39)
         ///Byte offset - 40 - dimensions
         hdr.dim = readVector(at: 40, length: 8)
-        updateDimsFromArray(dims: &hdr.dim)
+        try updateDimsFromArray(dims: &hdr.dim)
         ///Byte offset - 56 - intent_p1
         hdr.intent_p1 = readValue(at: 58)
         ///Byte offset - 60 - intent_p2
@@ -116,53 +111,47 @@ class NiftiV1BinaryReader: BinaryReader {
         return hdr
     }
     
-    func updateDimsFromArray(dims: inout [Int16]) {
-        var nDim: Int
-        
-        if dims[0] < 1 || dims[0] > 7 {
-            print("Invalid dimensions")
-            for (idx, size) in dims.enumerated() { print("Dim \(idx) has size of \(size)") }
-            return
-        }
-        
-        if dims[1] < 1 { dims[1] = 1 }
-        if dims[0] < 2 || (dims[0] >= 2 && dims[2] < 1) { dims[2] = 1 }
-        if dims[0] < 3 || (dims[0] >= 3 && dims[3] < 1) { dims[3] = 1 }
-        if dims[0] < 4 || (dims[0] >= 4 && dims[4] < 1) { dims[4] = 1 }
-        if dims[0] < 5 || (dims[0] >= 5 && dims[5] < 1) { dims[5] = 1 }
-        if dims[0] < 6 || (dims[0] >= 6 && dims[6] < 1) { dims[6] = 1 }
-        if dims[0] < 7 || (dims[0] >= 7 && dims[7] < 1) { dims[7] = 1 }
-        
-        nDim = Int(dims[0])
-        for _ in dims.reversed() {
-            
-            if nDim > 1 && (dims[nDim] <= 1) {
-                nDim -= 1
-            } else { break }
-        }
-        dims[0] = Int16(nDim)
+  func updateDimsFromArray(dims: inout [Int16]) throws(NiftiV1Error) {
+    guard !dims.isEmpty else { throw .invalidDimensions }
+    if dims[0] < 1 || dims[0] > 7 {
+      print("Invalid dimensions")
+      for (idx, size) in dims.enumerated() { print("Dim \(idx) has size of \(size)") }
+      throw .invalidDimensions
     }
+    
+    if dims[1] < 1 { dims[1] = 1 }
+    if dims[0] < 2 || (dims[0] >= 2 && dims[2] < 1) { dims[2] = 1 }
+    if dims[0] < 3 || (dims[0] >= 3 && dims[3] < 1) { dims[3] = 1 }
+    if dims[0] < 4 || (dims[0] >= 4 && dims[4] < 1) { dims[4] = 1 }
+    if dims[0] < 5 || (dims[0] >= 5 && dims[5] < 1) { dims[5] = 1 }
+    if dims[0] < 6 || (dims[0] >= 6 && dims[6] < 1) { dims[6] = 1 }
+    if dims[0] < 7 || (dims[0] >= 7 && dims[7] < 1) { dims[7] = 1 }
+    
+    var nDim = Int(dims[0])
+    for _ in dims.reversed() {
+      
+      if nDim > 1 && (dims[nDim] <= 1) {
+        nDim -= 1
+      } else { break }
+    }
+    dims[0] = Int16(nDim)
+  }
     
   func getPixelData(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
-        
-        do {
-            switch nim.niftiDatatype {
-            case .uint8:
-                return try getPixelDataUInt8(using: nim)
-            case .uint16:
-                return try getPixelDataUInt16(using: nim)
-            case .int16:
-                return try getPixelDataInt16(using: nim)
-            case .float32:
-                return try getPixelDataFloat32(using: nim)
-            default:
-                throw BinaryError.unsupportedDataFormat
-            }
-        } catch {
-            throw error
-        }
+    switch nim.niftiDatatype {
+    case .uint8:
+      return try getPixelDataUInt8(using: nim)
+    case .uint16:
+      return try getPixelDataUInt16(using: nim)
+    case .int16:
+      return try getPixelDataInt16(using: nim)
+    case .float32:
+      return try getPixelDataFloat32(using: nim)
+    default:
+      throw NiftiV1Error.unsupportedDataFormat
     }
-    
+  }
+  
     func getPixelDataUInt8(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         
         var arr = [[[PixelData]]].init(

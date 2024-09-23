@@ -1,16 +1,11 @@
 import Foundation
 
 public extension FileHandle {
-  static func readHeaderBytes(from url: URL) -> Data? {
-    do {
-      let handle = try FileHandle(forReadingFrom: url)
-      let headerData = handle.readData(ofLength: 348)
-      return headerData
-    } catch {
-      print(error)
-      return nil
-    }
+  
+  static func readHeaderBytes(from url: URL) throws -> Data {
+    try FileHandle(forReadingFrom: url).readData(ofLength: 348)
   }
+  
   static func readDataBytes(from url: URL, start: UInt64, end: UInt64) -> Data? {
     do {
       let handle = try FileHandle(forReadingFrom: url)

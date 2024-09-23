@@ -8,11 +8,8 @@ public struct NiftiV1 {
   
   public init(url: URL) throws {
     self.url = url
-    guard let fileBytes = FileHandle.readHeaderBytes(from: url) else {
-      throw SwiftyNiftiError.invalidStringPath
-    }
-    let niftiBinReader = NiftiV1BinaryReader(data: fileBytes)
-    
+    let headerBytes = try FileHandle.readHeaderBytes(from: url)
+    let niftiBinReader = NiftiV1BinaryReader(data: headerBytes)
     self.header = try niftiBinReader.getHeader()
   }
 }
