@@ -2,14 +2,15 @@ import Foundation
 
 public struct NiftiV1 {
   
-  public let header: NiftiV1.Header
-  
-  let url: URL
+  public let url: URL
   
   public init(url: URL) throws {
     self.url = url
+  }
+  
+  public func header() throws -> NiftiV1.Header {
     let headerBytes = try FileHandle.readHeaderBytes(from: url)
     let niftiBinReader = NiftiV1BinaryReader(data: headerBytes)
-    self.header = try niftiBinReader.getHeader()
+    return try niftiBinReader.getHeader()
   }
 }

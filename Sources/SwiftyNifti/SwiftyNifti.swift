@@ -17,7 +17,7 @@ public struct SwiftyNifti {
   public static func getZYFlippedData(for url: URL) throws -> [[[PixelData]]] {
     
     do {
-      let header = try NiftiV1(url: url).header
+      let header = try NiftiV1(url: url).header()
       let data = try Self.getData(for: url)
       var arr = Self.getEmptyPixelArr(nx: header.nz, ny: header.ny, nz: header.nx)
       for x in 0 ..< header.nx {
