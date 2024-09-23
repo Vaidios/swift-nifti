@@ -152,6 +152,17 @@ final class NiftiV1BinaryReader: BinaryReader {
     }
   }
   
+  func getVoxelsUInt8(using header: NiftiV1.Header) throws -> [Voxel] {
+    let count = header.nx + header.ny + header.nz
+    var voxels = Array(repeating: Voxel(), count: count)
+    for i in 0 ..< count {
+      let seekVal = Int(header.vox_offset) + (i * header.bytesPerVoxel)
+      let value: UInt8 = readValue(at: seekVal)
+      voxels[i] = Voxel(value: value)
+    }
+    return voxels
+  }
+  
     func getPixelDataUInt8(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
         
         var arr = [[[PixelData]]].init(

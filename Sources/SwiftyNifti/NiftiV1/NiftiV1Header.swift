@@ -1,83 +1,81 @@
-extension NiftiV1 {
-  public struct Header {
-    
-    public var sizeof_hdr: Int32 = 0 // 0 offset
-    public var dim_info: UInt8 = 0
+public struct NiftiV1Header {
+  
+  public var sizeof_hdr: Int32 = 0 // 0 offset
+  public var dim_info: UInt8 = 0
 
-    public var ndim: Int { get { return Int(dim[0]) } set { dim[0] = Int16(newValue) } }
-    public var nx: Int { return Int(dim[1]) }
-    public var ny: Int { return Int(dim[2]) }
-    public var nz: Int { return Int(dim[3]) }
-    public var nt: Int16 { get { return dim[4] } set { dim[4] = newValue } }
-    public var nu: Int16 { get { return dim[5] } set { dim[5] = newValue } }
-    public var nv: Int16 { get { return dim[6] } set { dim[6] = newValue } }
-    public var nw: Int16 { get { return dim[7] } set { dim[7] = newValue } }
-    public var dim: [Int16] = [] // 40
-    
-    public var intent_p1: Float = 0
-    public var intent_p2: Float = 0
-    public var intent_p3: Float = 0
-    public var intent_code: Int16 = 0
-    
-    public var niftiDatatype: NiftiType { return NiftiType(rawValue: datatype)! }
-    public var datatype: Int16 = 0 //70
-    public var bitpix: Int16 = 0
-    public var slice_start: Int16 = 0
-    
-    public var dx: Float { return pixdim[1] * Float(nx) }
-    public var dy: Float { return pixdim[2] * Float(ny) }
-    public var dz: Float { return pixdim[3] * Float(nz) }
-    public var dt: Float { return pixdim[4] * Float(nt) }
-    public var du: Float { return pixdim[5] * Float(nu) }
-    public var dv: Float { return pixdim[6] * Float(nv) }
-    public var dw: Float { return pixdim[7] * Float(nw) }
-    public var pixdim: [Float] = []
-    
-    public var nvox: Int = 0
-    public var vox_offset: Float = 0
-    public var scl_slope: Float = 0
-    public var scl_inter: Float = 0
-    public var slice_end: Int16 = 0
-    public var slice_code: UInt8 = 0
-    public var xyzt_units: UInt8 = 0
-    public var cal_max: Float = 0
-    public var cal_min: Float = 0
-    public var slice_duration: Float = 0
-    public var toffset: Float = 0
-    
-    public var glmax: Int32 = 0
-    public var glmin: Int32 = 0
-    
-    public var descript: [UInt8] = []
-    var descriptString: String { return String(bytes: descript, encoding: .utf8) ?? ""}
-    
-    public var aux_file: [UInt8] = []
-    
-    public var qform_code: Int16 = 0
-    public var sform_code: Int16 = 0
-    
-    public var quatern_b: Float = 0
-    public var quatern_c: Float = 0
-    public var quatern_d: Float = 0
-    public var qoffset_x: Float = 0
-    public var qoffset_y: Float = 0
-    public var qoffset_z: Float = 0
-    
-    public var srow_x: [Float] = []
-    public var srow_y: [Float] = []
-    public var srow_z: [Float] = []
+  public var ndim: Int { get { Int(dim[0]) } set { dim[0] = Int16(newValue) } }
+  public var nx: Int { Int(dim[1]) }
+  public var ny: Int { Int(dim[2]) }
+  public var nz: Int { Int(dim[3]) }
+  public var nt: Int16 { get { dim[4] } set { dim[4] = newValue } }
+  public var nu: Int16 { get { dim[5] } set { dim[5] = newValue } }
+  public var nv: Int16 { get { dim[6] } set { dim[6] = newValue } }
+  public var nw: Int16 { get { dim[7] } set { dim[7] = newValue } }
+  public var dim: [Int16] = [] // 40
+  
+  public var intent_p1: Float = 0
+  public var intent_p2: Float = 0
+  public var intent_p3: Float = 0
+  public var intent_code: Int16 = 0
+  
+  public var niftiDatatype: NiftiType { NiftiType(rawValue: datatype)! }
+  public var datatype: Int16 = 0 //70
+  public var bitpix: Int16 = 0
+  public var slice_start: Int16 = 0
+  
+  public var dx: Float { pixdim[1] * Float(nx) }
+  public var dy: Float { pixdim[2] * Float(ny) }
+  public var dz: Float { pixdim[3] * Float(nz) }
+  public var dt: Float { pixdim[4] * Float(nt) }
+  public var du: Float { pixdim[5] * Float(nu) }
+  public var dv: Float { pixdim[6] * Float(nv) }
+  public var dw: Float { pixdim[7] * Float(nw) }
+  public var pixdim: [Float] = []
+  
+  public var nvox: Int = 0
+  public var vox_offset: Float = 0
+  public var scl_slope: Float = 0
+  public var scl_inter: Float = 0
+  public var slice_end: Int16 = 0
+  public var slice_code: UInt8 = 0
+  public var xyzt_units: UInt8 = 0
+  public var cal_max: Float = 0
+  public var cal_min: Float = 0
+  public var slice_duration: Float = 0
+  public var toffset: Float = 0
+  
+  public var glmax: Int32 = 0
+  public var glmin: Int32 = 0
+  
+  public var descript: [UInt8] = []
+  public var descriptString: String { String(bytes: descript, encoding: .utf8) ?? ""}
+  
+  public var aux_file: [UInt8] = []
+  
+  public var qform_code: Int16 = 0
+  public var sform_code: Int16 = 0
+  
+  public var quatern_b: Float = 0
+  public var quatern_c: Float = 0
+  public var quatern_d: Float = 0
+  public var qoffset_x: Float = 0
+  public var qoffset_y: Float = 0
+  public var qoffset_z: Float = 0
+  
+  public var srow_x: [Float] = []
+  public var srow_y: [Float] = []
+  public var srow_z: [Float] = []
 
-    public var intent_name: [UInt8] = []
-    var intent_nameString: String { return String(bytes: intent_name, encoding: .utf8) ?? ""}
-    
-    public var magic: [UInt8] = []
-    var magicString: String { return String(bytes: magic, encoding: .utf8) ?? ""}
-  }
+  public var intent_name: [UInt8] = []
+  public var intent_nameString: String { String(bytes: intent_name, encoding: .utf8) ?? ""}
+  
+  public var magic: [UInt8] = []
+  public var magicString: String { String(bytes: magic, encoding: .utf8) ?? ""}
 }
 
-extension NiftiV1.Header: CustomStringConvertible {
-    public var description: String {
-        return """
+extension NiftiV1Header: CustomStringConvertible {
+  public var description: String {
+    return """
             Intent code - \(intent_code)
             Dimensions - \(dim)
             Datatype - \(datatypeString)
@@ -87,10 +85,10 @@ extension NiftiV1.Header: CustomStringConvertible {
             Voxel dimens - \(pixdim)
             Voxel offset - \(vox_offset)
         """
-    }
+  }
 }
 
-extension NiftiV1.Header {
+extension NiftiV1Header {
     public var dataArray: [(String, String)] {
         [("Size of header", String(sizeof_hdr) + " Bytes"),
          ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
@@ -117,7 +115,7 @@ extension NiftiV1.Header {
     }
 }
 
-extension NiftiV1.Header {
+extension NiftiV1Header {
     var fileLength: Int {
         var total = 1
         for i in 1 ... Int(dim[0]) {

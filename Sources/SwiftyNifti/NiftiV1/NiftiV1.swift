@@ -2,6 +2,9 @@ import Foundation
 
 public struct NiftiV1 {
   
+  public typealias Header = NiftiV1Header
+  public typealias Volume = NiftiV1Volume
+  
   public let url: URL
   
   public init(url: URL) throws {
@@ -12,5 +15,13 @@ public struct NiftiV1 {
     let headerBytes = try FileHandle.readHeaderBytes(from: url)
     let niftiBinReader = NiftiV1BinaryReader(data: headerBytes)
     return try niftiBinReader.getHeader()
+  }
+  
+  public func volume() throws -> Volume {
+    let header = try header()
+    let volumeData = try FileHandle(forReadingFrom: url).availableData
+    let niftiBinReader = NiftiV1BinaryReader(data: volumeData)
+    let voxels = try niftiBinReader.getVoxelsUInt8(using: header)
+    return Volume(voxels: voxels)
   }
 }

@@ -32,22 +32,7 @@ public struct SwiftyNifti {
       throw error
     }
   }
-  
-  public static func getVolume(for url: URL) throws -> NiftiVolume {
-    do {
-      let fileBytes = try FileHandle(forReadingFrom: url).availableData
-      let niftiBinReader = NiftiV1BinaryReader(data: fileBytes)
-      let header = try niftiBinReader.getHeader()
-      let pixeldata = try niftiBinReader.getPixelData(using: header)
-      
-      let volume = NiftiVolume(header: header, data: pixeldata)
-      
-      return volume
-    } catch {
-      throw error
-    }
-  }
-  
+
   private static func getEmptyPixelArr(nx: Int, ny: Int, nz: Int) -> [[[PixelData]]] {
     let arr = [[[PixelData]]].init(
       repeating: [[PixelData]].init(
