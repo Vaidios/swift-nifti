@@ -18,7 +18,7 @@ public struct NiftiV1Header {
   public var intent_p3: Float = 0
   public var intent_code: Int16 = 0
   
-  public var niftiDatatype: NiftiType { NiftiType(rawValue: datatype)! }
+  public var niftiDatatype: DataType { DataType(rawValue: datatype)! }
   public var datatype: Int16 = 0 //70
   public var bitpix: Int16 = 0
   public var slice_start: Int16 = 0
@@ -89,150 +89,152 @@ extension NiftiV1Header: CustomStringConvertible {
 }
 
 extension NiftiV1Header {
-    public var dataArray: [(String, String)] {
-        [("Size of header", String(sizeof_hdr) + " Bytes"),
-         ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
-         ("Datatype", datatypeString),
-         ("Pixel dimensions", pixdim.reduce("", { (res, dim) -> String in
-            return res + String(dim) + "x"
-         })),
-         ("qform", String(qform_code)),
-         ("sform", String(sform_code)),
-         ("Description", descriptString),
-         ("Intent P1", "\(intent_p1)"),
-         ("Intent P2", "\(intent_p2)"),
-         ("Intent P3", "\(intent_p3)"),
-         ("Intent code", "\(intent_code)"),
-         ("Quaternion B", "\(quatern_b)"),
-         ("Quaternion C", "\(quatern_c)"),
-         ("Quaternion D", "\(quatern_d)"),
-         ("Q offset X", "\(qoffset_x)"),
-         ("Q offset Y", "\(qoffset_y)"),
-         ("Q offset Z", "\(qoffset_z)"),
-         ("Intent name", intent_nameString),
-         ("Magic string", magicString)
-        ]
-    }
+  public var dataArray: [(String, String)] {
+    [
+      ("Size of header", String(sizeof_hdr) + " Bytes"),
+      ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
+      ("Datatype", datatypeString),
+      ("Pixel dimensions", pixdim.reduce("", { (res, dim) -> String in
+        return res + String(dim) + "x"
+      })),
+      ("qform", String(qform_code)),
+      ("sform", String(sform_code)),
+      ("Description", descriptString),
+      ("Intent P1", "\(intent_p1)"),
+      ("Intent P2", "\(intent_p2)"),
+      ("Intent P3", "\(intent_p3)"),
+      ("Intent code", "\(intent_code)"),
+      ("Quaternion B", "\(quatern_b)"),
+      ("Quaternion C", "\(quatern_c)"),
+      ("Quaternion D", "\(quatern_d)"),
+      ("Q offset X", "\(qoffset_x)"),
+      ("Q offset Y", "\(qoffset_y)"),
+      ("Q offset Z", "\(qoffset_z)"),
+      ("Intent name", intent_nameString),
+      ("Magic string", magicString)
+    ]
+  }
 }
 
 extension NiftiV1Header {
-    var fileLength: Int {
-        var total = 1
-        for i in 1 ... Int(dim[0]) {
-            let size = dim[i]
-            total *= Int(size)
-        }
-        total *= Int(bitpix / 8)
-        total += Int(vox_offset)
-        
-        return total
+  var fileLength: Int {
+    var total = 1
+    for i in 1 ... Int(dim[0]) {
+      let size = dim[i]
+      total *= Int(size)
     }
+    total *= Int(bitpix / 8)
+    total += Int(vox_offset)
     
-    var datatypeString: String {
-        switch NiftiType(rawValue: datatype) {
-        
-        case .uint8: return "8-Bit UInt"
-        case .uint16: return "16-Bit UInt"
-        case .uint32: return "32-Bit UInt"
-        case .uint64: return "64-Bit UInt"
-            
-        case .int8: return "8-Bit Int"
-        case .int16: return "16-Bit Int"
-        case .int32: return "32-Bit Int"
-        case .int64: return "64-Bit Int"
-            
-        case .float32: return "32-Bit Float"
-        case .float64: return "64-Bit Float"
-        case .float128: return "128-Bit Float"
-
-        default: return "Unknown"
-        }
+    return total
+  }
+  
+  var datatypeString: String {
+    switch niftiDatatype {
+      
+    case .uint8: return "8-Bit UInt"
+    case .uint16: return "16-Bit UInt"
+    case .uint32: return "32-Bit UInt"
+    case .uint64: return "64-Bit UInt"
+      
+    case .int8: return "8-Bit Int"
+    case .int16: return "16-Bit Int"
+    case .int32: return "32-Bit Int"
+    case .int64: return "64-Bit Int"
+      
+    case .float32: return "32-Bit Float"
+    case .float64: return "64-Bit Float"
+    case .float128: return "128-Bit Float"
+      
+    default: return "Unknown"
     }
+  }
     
-    var bytesPerVoxel: Int {
-        switch NiftiType(rawValue: datatype) {
-        case .uint8: return 1
-        case .int16: return 2
-        case .int32: return 4
-        case .float32: return 4
-        case .float64: return 8
-        case .rgb24: return 3
-        case .int8: return 1
-        case .uint16: return 2
-        case .uint32: return 4
-        case .int64: return 8
-        case .uint64: return 8
-        case .float128: return 16
-        default: print("BytesPerVoxel, bad enum"); return 0
-        }
+  var bytesPerVoxel: Int {
+    switch niftiDatatype {
+    case .uint8: return 1
+    case .int16: return 2
+    case .int32: return 4
+    case .float32: return 4
+    case .float64: return 8
+    case .rgb24: return 3
+    case .int8: return 1
+    case .uint16: return 2
+    case .uint32: return 4
+    case .int64: return 8
+    case .uint64: return 8
+    case .float128: return 16
+    default: print("BytesPerVoxel, bad enum"); return 0
     }
+  }
 }
 
-enum xyzt_Units: Int16 {
-    case unknown = 0
-    case metres = 1
-    case millimetres = 2
-    case micrometres = 3
-    case seconds = 8
-    case milliseconds = 16
-    case microseconds = 24
-    case hertz = 32
-    case ppm = 40
-    case rads = 48
+/// Known from C as xyzt_units
+enum DimensionUnits: Int16 {
+  case unknown = 0
+  case metres = 1
+  case millimetres = 2
+  case micrometres = 3
+  case seconds = 8
+  case milliseconds = 16
+  case microseconds = 24
+  case hertz = 32
+  case ppm = 40
+  case rads = 48
 }
 
-public enum NiftiType: Int16 {
-    case uint8 = 2
-    case int16 = 4
-    case int32 = 8
-    case float32 = 16
-    case complex64 = 32
-    case float64 = 64
-    case rgb24 = 128
-    case int8 = 256
-    case uint16 = 512
-    case uint32 = 768
-    case int64 = 1024
-    case uint64 = 1280
-    case float128 = 1536
-    case complex128 = 1792
-    case complex256 = 2048
-    case rgba32 = 2304
+public enum DataType: Int16 {
+  case uint8 = 2
+  case int16 = 4
+  case int32 = 8
+  case float32 = 16
+  case complex64 = 32
+  case float64 = 64
+  case rgb24 = 128
+  case int8 = 256
+  case uint16 = 512
+  case uint32 = 768
+  case int64 = 1024
+  case uint64 = 1280
+  case float128 = 1536
+  case complex128 = 1792
+  case complex256 = 2048
+  case rgba32 = 2304
 }
 
-extension NiftiType {
-    var bytesPerVoxel: Int {
-        switch self {
-        case .uint8: return 1
-        case .int16: return 2
-        case .int32: return 4
-        case .float32: return 4
-        case .float64: return 8
-        case .rgb24: return 3
-        case .int8: return 1
-        case .uint16: return 2
-        case .uint32: return 4
-        case .int64: return 8
-        case .uint64: return 8
-        case .float128: return 16
-        case .complex64: return 8 //Check if it is correct
-        case .complex128: return 16 //Check if it is correct
-        case .complex256: return 32 //Check if it is correct
-        case .rgba32: return 4 //Check if it is correct
-        }
+extension DataType {
+  var bytesPerVoxel: Int {
+    switch self {
+    case .uint8: return 1
+    case .int16: return 2
+    case .int32: return 4
+    case .float32: return 4
+    case .float64: return 8
+    case .rgb24: return 3
+    case .int8: return 1
+    case .uint16: return 2
+    case .uint32: return 4
+    case .int64: return 8
+    case .uint64: return 8
+    case .float128: return 16
+    case .complex64: return 8 //Check if it is correct
+    case .complex128: return 16 //Check if it is correct
+    case .complex256: return 32 //Check if it is correct
+    case .rgba32: return 4 //Check if it is correct
     }
+  }
 }
 
 enum NiftiOrientation: CustomStringConvertible {
-    case L2R, R2L, P2A, A2P, I2S, S2I
-    var description: String {
-        switch self {
-        case .L2R: return "Left-to-Right"
-        case .R2L: return "Right-to-Left"
-        case .P2A: return "Posterior-to-Anterior"
-        case .A2P: return "Anterior-to-Posterior"
-        case .I2S: return "Inferior-to-Superior"
-        case .S2I: return "Superior-to-Inferior"
-        }
+  case L2R, R2L, P2A, A2P, I2S, S2I
+  var description: String {
+    switch self {
+    case .L2R: return "Left-to-Right"
+    case .R2L: return "Right-to-Left"
+    case .P2A: return "Posterior-to-Anterior"
+    case .A2P: return "Anterior-to-Posterior"
+    case .I2S: return "Inferior-to-Superior"
+    case .S2I: return "Superior-to-Inferior"
     }
+  }
 }
