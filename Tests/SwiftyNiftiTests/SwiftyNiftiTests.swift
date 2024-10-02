@@ -15,6 +15,13 @@ struct ParsingTests {
     #expect(header.dim[3] == 10)
   }
   
+  @Test
+  func testVolume() async throws {
+    let exampleURL = try getExampleURL()
+    let volume = try NiftiV1(url: exampleURL).volume()
+    #expect(volume.voxels.count == 138)
+  }
+  
   func getExampleURL() throws -> URL {
     try #require(Bundle.module.url(forResource: "minimal", withExtension: "nii"))
   }
