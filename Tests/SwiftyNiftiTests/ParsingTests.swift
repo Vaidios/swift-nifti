@@ -19,7 +19,15 @@ struct ParsingTests {
   func testVolume() async throws {
     let exampleURL = try getExampleURL()
     let volume = try NiftiV1(url: exampleURL).volume()
-    #expect(volume.voxels.count == 138)
+    #expect(volume.voxels.count == 40960)
+  }
+  
+  @Test
+  func testPlane() async throws {
+    let exampleURL = try getExampleURL()
+    let volume = try NiftiV1(url: exampleURL).volume()
+    let plane = volume.getCoronalPlane(z: 1)
+    #expect(plane.count == 4096)
   }
   
   func getExampleURL() throws -> URL {

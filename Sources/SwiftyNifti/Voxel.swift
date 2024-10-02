@@ -1,9 +1,15 @@
 import Foundation
 
 public struct Voxel {
-  let value: UInt8
+  public let a: UInt8
+  public let r: UInt8
+  public let g: UInt8
+  public let b: UInt8
   
   init(value: UInt8 = 0) {
-    self.value = value
+    self.a = 255
+    self.r = value
+    self.g = value
+    self.b = value
   }
 }
