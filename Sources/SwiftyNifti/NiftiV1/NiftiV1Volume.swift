@@ -21,6 +21,7 @@ public struct NiftiV1Volume {
     for x in 1...nx {
       for y in 1...ny {
         let voxelIndex = (x * y * z) - 1
+        guard voxelIndex < self.voxels.count else { continue }
         let voxel = self.voxels[voxelIndex]
         parsedVoxels[(x * y) - 1] = voxel
       }
