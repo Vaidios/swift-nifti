@@ -144,21 +144,6 @@ final class NiftiV1BinaryReader: BinaryReader {
     dims[0] = Int16(nDim)
   }
   
-  func getPixelData(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
-    switch nim.niftiDatatype {
-    case .uint8:
-      return try getPixelDataUInt8(using: nim)
-    case .uint16:
-      return try getPixelDataUInt16(using: nim)
-    case .int16:
-      return try getPixelDataInt16(using: nim)
-    case .float32:
-      return try getPixelDataFloat32(using: nim)
-    default:
-      throw NiftiV1Error.unsupportedDataFormat
-    }
-  }
-  
   func getVoxels(using header: NiftiV1.Header) throws -> [Voxel] {
     switch header.niftiDatatype {
     case .uint8:
@@ -168,7 +153,10 @@ final class NiftiV1BinaryReader: BinaryReader {
     case .uint32:
       try getVoxelData(using: header).map { (value: UInt32) in Voxel(value: Double(value)) }
     case .float32:
-      try getVoxelData(using: header).map { (value: Float) in Voxel(value: Double(value)) }
+      try getVoxelData(using: header).map { (value: Float32) in
+        let newValue = (value / Float32.greatestFiniteMagnitude) * 255
+        return Voxel(value: Double(newValue))
+      }
     default:
       throw NiftiV1Error.unsupportedDataFormat
     }
@@ -179,125 +167,19 @@ final class NiftiV1BinaryReader: BinaryReader {
   }
   
   func getVoxelData<T>(using header: NiftiV1Header) throws -> [T] {
-    let count = header.nx * header.ny * header.nz
-    let length = count * header.bytesPerVoxel
+    let voxelCount = header.nx * header.ny * header.nz
     let voxelOffset = Int(header.vox_offset)
-    if length < data.count {
+    if voxelCount < data.count / header.bytesPerVoxel {
       // trim data, because it must have been passed with header
-      let trimmedData = data.subdata(in: voxelOffset ..< voxelOffset + length)
-      return trimmedData.loadVector(at: 0, length: length, isByteSwapped: isByteSwapped)
+      return data.subdata(in: voxelOffset ..< data.count).loadVector(at: 0, length: voxelCount, isByteSwapped: isByteSwapped)
     } else {
-      return readVector(at: 0, length: length)
+      return data.loadVector(at: 0, length: voxelCount, isByteSwapped: isByteSwapped)
     }
   }
-  
-  func getPixelDataUInt8(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
-    
-    var arr = [[[PixelData]]].init(
-      repeating: [[PixelData]].init(
-        repeating: [PixelData].init(
-          repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
-    
-    var count: Int = 0
-    for z in 0 ..< nim.nz {
-      for y in 0 ..< nim.ny {
-        for x in 0 ..< nim.nx {
-          let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
-          let val: UInt8 = readValue(at: seekVal)
-          arr[x][y][z].r = val
-          arr[x][y][z].g = val
-          arr[x][y][z].b = val
-          count += 1
-        }
-      }
-    }
-    return arr
-  }
-  
-  func getPixelDataUInt16(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
-    var arr = [[[PixelData]]].init(
-      repeating: [[PixelData]].init(
-        repeating: [PixelData].init(
-          repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
-    
-    var count: Int = 0
-    for z in 0 ..< nim.nz {
-      for y in 0 ..< nim.ny {
-        for x in 0 ..< nim.nx {
-          let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
-          let val: UInt16 = readValue(at: seekVal)
-          let normalizedVal = (Float(val) / Float(UInt16.max)) * 255
-          arr[x][y][z].r = UInt8(normalizedVal)
-          arr[x][y][z].g = UInt8(normalizedVal)
-          arr[x][y][z].b = UInt8(normalizedVal)
-          count += 1
-        }
-      }
-    }
-    return arr
-  }
-  func getPixelDataInt16(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
-    var arr = [[[PixelData]]].init(
-      repeating: [[PixelData]].init(
-        repeating: [PixelData].init(
-          repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
-    
-    var count: Int = 0
-    for z in 0 ..< nim.nz {
-      for y in 0 ..< nim.ny {
-        for x in 0 ..< nim.nx {
-          let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
-          let val: Int16 = readValue(at: seekVal)
-          arr[x][y][z].r = UInt8(val)
-          arr[x][y][z].g = UInt8(val)
-          arr[x][y][z].b = UInt8(val)
-          count += 1
-        }
-      }
-    }
-    return arr
-  }
-  
-  func getPixelDataFloat32(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
-    var arr = [[[PixelData]]].init(
-      repeating: [[PixelData]].init(
-        repeating: [PixelData].init(
-          repeating: PixelData(r: 0, g: 0, b: 0), count: nim.nz), count: nim.ny), count: nim.nx)
-    
-    var floatArr = [[[Float32]]].init(repeating: [[Float]].init(repeating: [Float].init(repeating: 0, count: nim.nz), count: nim.ny), count: nim.nx)
-    
-    var count: Int = 0
-    var maxFloatVal: Float32 = 0
-    var minFloatVal: Float32 = 0
-    for z in 0 ..< nim.nz {
-      for y in 0 ..< nim.ny {
-        for x in 0 ..< nim.nx {
-          let seekVal = Int(nim.vox_offset) + (count * nim.bytesPerVoxel)
-          let val: Float32 = readValue(at: seekVal)
-          
-          if val > maxFloatVal {
-            maxFloatVal = val
-            print("New max val \(maxFloatVal)")
-          }
-          if val < minFloatVal {
-            minFloatVal = val
-            print("New min val \(minFloatVal)")
-          }
-          floatArr[x][y][z] = val
-          
-          count += 1
-        }
-      }
-    }
-    arr = floatArr.map { (firstDim) -> [[PixelData]] in
-      return firstDim.map { (secondDim) -> [PixelData] in
-        return secondDim.map { thirdDim -> PixelData in
-          let normalizedVal = thirdDim / maxFloatVal
-          let val = UInt8(normalizedVal * 255)
-          return PixelData(r: val, g: val, b: val)
-        }
-      }
-    }
-    return arr
+}
+
+extension Data {
+  func getVolumeData<T>(datatype: T.Type, isByteSwapped: Bool) -> [Voxel] {
+    loadVector(at: 0, length: count, isByteSwapped: isByteSwapped)
   }
 }
