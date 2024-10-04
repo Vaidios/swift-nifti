@@ -1,15 +1,23 @@
 import Foundation
 
 public struct Voxel: Equatable {
-  public let a: UInt8
-  public let r: UInt8
-  public let g: UInt8
-  public let b: UInt8
   
-  init(value: UInt8 = 0) {
-    self.a = 255
-    self.r = value
-    self.g = value
-    self.b = value
+  public let value: Double
+  
+  init(value: Double) {
+    self.value = value
+  }
+  
+  init(_ uint8: UInt8) {
+    self.value = Double(uint8)
+  }
+  
+  public var pixel: PixelData {
+    PixelData(
+      a: 255,
+      r: UInt8(value),
+      g: UInt8(value),
+      b: UInt8(value)
+    )
   }
 }

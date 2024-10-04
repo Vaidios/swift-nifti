@@ -9,7 +9,9 @@ extension Data {
   }
   
   func load<T>(at offset: Int, isByteSwapped: Bool = false) -> T {
-    let subdata = subdata(in: offset ..< offset + MemoryLayout<T>.size)
+    let count = count
+    let size = MemoryLayout<T>.size
+    let subdata = subdata(in: offset ..< offset + size)
     return isByteSwapped ? subdata.byteSwapped.load() : subdata.load()
   }
   

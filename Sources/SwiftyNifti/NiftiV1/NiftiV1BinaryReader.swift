@@ -162,16 +162,33 @@ final class NiftiV1BinaryReader: BinaryReader {
   func getVoxels(using header: NiftiV1.Header) throws -> [Voxel] {
     switch header.niftiDatatype {
     case .uint8:
-      try getVoxelsUInt8(using: header)
+      try getVoxelData(using: header).map { (value: UInt8) in Voxel(value: Double(value)) }
+    case .uint16:
+      try getVoxelData(using: header).map { (value: UInt16) in Voxel(value: Double(value)) }
+    case .uint32:
+      try getVoxelData(using: header).map { (value: UInt32) in Voxel(value: Double(value)) }
+    case .float32:
+      try getVoxelData(using: header).map { (value: Float) in Voxel(value: Double(value)) }
     default:
       throw NiftiV1Error.unsupportedDataFormat
     }
   }
   
   func getVoxelsUInt8(using header: NiftiV1.Header) throws -> [Voxel] {
+    try getVoxelData(using: header).map { (value: UInt8) in Voxel(value: Double(value)) }
+  }
+  
+  func getVoxelData<T>(using header: NiftiV1Header) throws -> [T] {
     let count = header.nx * header.ny * header.nz
-    let data: [UInt8] = readVector(at: Int(header.vox_offset), length: count * header.bytesPerVoxel)
-    return data.map { Voxel(value: $0) }
+    let length = count * header.bytesPerVoxel
+    let voxelOffset = Int(header.vox_offset)
+    if length < data.count {
+      // trim data, because it must have been passed with header
+      let trimmedData = data.subdata(in: voxelOffset ..< voxelOffset + length)
+      return trimmedData.loadVector(at: 0, length: length, isByteSwapped: isByteSwapped)
+    } else {
+      return readVector(at: 0, length: length)
+    }
   }
   
   func getPixelDataUInt8(using nim: NiftiV1.Header) throws -> [[[PixelData]]] {
