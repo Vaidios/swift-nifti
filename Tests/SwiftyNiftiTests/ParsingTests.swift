@@ -26,8 +26,8 @@ struct ParsingTests {
   func testPlane() async throws {
     let exampleURL = try getExampleURL()
     let volume = try NiftiV1(url: exampleURL).volume()
-    let plane = volume.getCoronalPlane(z: 1)
-    #expect(plane.count == 4096)
+    let plane = volume.extractPlane(plane: .coronal, sliceIndex: 1)
+    #expect(plane?.data.count == 640)
   }
   
   func getExampleURL() throws -> URL {

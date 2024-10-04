@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Voxel {
+public struct Voxel: Equatable {
   public let a: UInt8
   public let r: UInt8
   public let g: UInt8

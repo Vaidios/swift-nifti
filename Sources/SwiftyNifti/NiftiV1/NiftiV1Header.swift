@@ -12,6 +12,9 @@ public struct NiftiV1Header {
   public var nv: Int16 { get { dim[6] } set { dim[6] = newValue } }
   public var nw: Int16 { get { dim[7] } set { dim[7] = newValue } }
   public var dim: [Int16] = [] // 40
+  public var dimensions: VolumeDimensions {
+    VolumeDimensions(nx: nx, ny: ny, nz: nz)
+  }
   
   public var intent_p1: Float = 0
   public var intent_p2: Float = 0
@@ -129,7 +132,7 @@ extension NiftiV1Header {
     return total
   }
   
-  var datatypeString: String {
+  public var datatypeString: String {
     switch niftiDatatype {
       
     case .uint8: return "8-Bit UInt"

@@ -22,6 +22,6 @@ public struct NiftiV1 {
     let volumeData = try FileHandle(forReadingFrom: url).availableData
     let niftiBinReader = NiftiV1BinaryReader(data: volumeData)
     let voxels = try niftiBinReader.getVoxels(using: header)
-    return Volume(header: header, voxels: voxels)
+    return Volume(dimensions: header.dimensions, voxels: voxels)
   }
 }
