@@ -145,15 +145,28 @@ final class NiftiV1BinaryReader: BinaryReader {
   }
   
   func getVoxels(using header: NiftiV1.Header) throws -> [Voxel] {
+    let dimensions = header.dimensions
+    let voxelCount = dimensions.nx * dimensions.ny * dimensions.nz
+    let voxelOffset = Int(header.vox_offset)
+    let volumeData: Data
+    if voxelCount < data.count / header.bytesPerVoxel {
+      volumeData = data.subdata(in: voxelOffset ..< data.count)
+    } else {
+      volumeData = data
+    }
     switch header.niftiDatatype {
     case .uint8:
-      try getVoxelData(using: header).map { (value: UInt8) in Voxel(value: Double(value)) }
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt8) in Voxel(value: Double(value)) }
     case .uint16:
-      try getVoxelData(using: header).map { (value: UInt16) in Voxel(value: Double(value)) }
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt16) in Voxel(value: Double(value)) }
     case .uint32:
-      try getVoxelData(using: header).map { (value: UInt32) in Voxel(value: Double(value)) }
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt32) in Voxel(value: Double(value)) }
     case .float32:
-      try getVoxelData(using: header).map { (value: Float32) in
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: Float32) in
         let newValue = (value / Float32.greatestFiniteMagnitude) * 255
         return Voxel(value: Double(newValue))
       }
@@ -162,24 +175,32 @@ final class NiftiV1BinaryReader: BinaryReader {
     }
   }
   
-  func getVoxelsUInt8(using header: NiftiV1.Header) throws -> [Voxel] {
-    try getVoxelData(using: header).map { (value: UInt8) in Voxel(value: Double(value)) }
-  }
-  
-  func getVoxelData<T>(using header: NiftiV1Header) throws -> [T] {
-    let voxelCount = header.nx * header.ny * header.nz
-    let voxelOffset = Int(header.vox_offset)
-    if voxelCount < data.count / header.bytesPerVoxel {
-      // trim data, because it must have been passed with header
-      return data.subdata(in: voxelOffset ..< data.count).loadVector(at: 0, length: voxelCount, isByteSwapped: isByteSwapped)
+  func getVoxels(using dimensions: VolumeDimensions, voxelOffset: Int, bytesPerVoxel: Int, datatype: DataType) throws -> [Voxel] {
+    let voxelCount = dimensions.nx * dimensions.ny * dimensions.nz
+    let volumeData: Data
+    if voxelCount < data.count / bytesPerVoxel {
+      volumeData = data.subdata(in: voxelOffset ..< data.count)
     } else {
-      return data.loadVector(at: 0, length: voxelCount, isByteSwapped: isByteSwapped)
+      volumeData = data
     }
-  }
-}
-
-extension Data {
-  func getVolumeData<T>(datatype: T.Type, isByteSwapped: Bool) -> [Voxel] {
-    loadVector(at: 0, length: count, isByteSwapped: isByteSwapped)
+    switch datatype {
+    case .uint8:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt8) in Voxel(value: Double(value)) }
+    case .uint16:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt16) in Voxel(value: Double(value)) }
+    case .uint32:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt32) in Voxel(value: Double(value)) }
+    case .float32:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: Float32) in
+        let newValue = (value / Float32.greatestFiniteMagnitude) * 255
+        return Voxel(value: Double(newValue))
+      }
+    default:
+      throw NiftiV1Error.unsupportedDataFormat
+    }
   }
 }
