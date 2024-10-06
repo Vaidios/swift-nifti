@@ -157,19 +157,19 @@ final class NiftiV1BinaryReader: BinaryReader {
     switch header.niftiDatatype {
     case .uint8:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt8) in Voxel(value: Double(value)) }
+        .map { (value: UInt8) in Voxel(value: Float(value)) }
     case .uint16:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt16) in Voxel(value: Double(value)) }
+        .map { (value: UInt16) in Voxel(value: Float(value)) }
     case .uint32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt32) in Voxel(value: Double(value)) }
+        .map { (value: UInt32) in Voxel(value: Float(value)) }
     case .float32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: Float32) in
-        let newValue = (value / Float32.greatestFiniteMagnitude) * 255
-        return Voxel(value: Double(newValue))
-      }
+          let newValue = (value / Float32.greatestFiniteMagnitude) * 255
+          return Voxel(value: Float(newValue))
+        }
     default:
       throw NiftiV1Error.unsupportedDataFormat
     }
@@ -186,19 +186,19 @@ final class NiftiV1BinaryReader: BinaryReader {
     switch datatype {
     case .uint8:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt8) in Voxel(value: Double(value)) }
+        .map { (value: UInt8) in Voxel(value: Float(value)) }
     case .uint16:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt16) in Voxel(value: Double(value)) }
+        .map { (value: UInt16) in Voxel(value: Float(value)) }
     case .uint32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt32) in Voxel(value: Double(value)) }
+        .map { (value: UInt32) in Voxel(value: Float(value)) }
     case .float32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: Float32) in
-        let newValue = (value / Float32.greatestFiniteMagnitude) * 255
-        return Voxel(value: Double(newValue))
-      }
+          let newValue = (value / Float32.greatestFiniteMagnitude) * 255
+          return Voxel(value: Float(newValue))
+        }
     default:
       throw NiftiV1Error.unsupportedDataFormat
     }

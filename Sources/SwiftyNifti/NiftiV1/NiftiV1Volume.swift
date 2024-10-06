@@ -7,9 +7,9 @@ public enum PlaneDirection {
 }
 
 public struct VolumeDimensions {
-  let nx: Int
-  let ny: Int
-  let nz: Int
+  public let nx: Int
+  public let ny: Int
+  public let nz: Int
 }
 
 public struct NiftiV1Volume {
