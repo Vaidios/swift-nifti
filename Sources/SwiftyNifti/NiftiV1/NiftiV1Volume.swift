@@ -77,7 +77,7 @@ public struct NiftiV1Volume {
     case .coronal:
       return Plane(data: result, width: width, height: depth)
     case .sagittal:
-      return Plane(data: result, width: depth, height: height)
+      return Plane(data: result, width: height, height: width)
     }
   }
 }
