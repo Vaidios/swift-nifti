@@ -158,19 +158,34 @@ final class NiftiV1BinaryReader: BinaryReader {
     case .uint8:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt8) in Voxel(value: Float(value)) }
-    case .uint16:
+    case .int16:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt16) in Voxel(value: Float(value)) }
-    case .uint32:
+        .map { (value: Int16) in Voxel(value: Float(value)) }
+    case .int32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt32) in Voxel(value: Float(value)) }
+        .map { (value: Int32) in Voxel(value: Float(value)) }
     case .float32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: Float32) in
           let newValue = (value / Float32.greatestFiniteMagnitude) * 255
           return Voxel(value: Float(newValue))
         }
-    default:
+    case .int8:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: Int8) in Voxel(value: Float(value)) }
+    case .uint16:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt16) in Voxel(value: Float(value)) }
+    case .uint32:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt32) in Voxel(value: Float(value)) }
+    case .int64:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: Int64) in Voxel(value: Float(value)) }
+    case .uint64:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt64) in Voxel(value: Float(value)) }
+    case .float64, .rgb24, .float128, .complex64, .complex128, .complex256, .rgba32:
       throw NiftiV1Error.unsupportedDataFormat
     }
   }
@@ -187,19 +202,34 @@ final class NiftiV1BinaryReader: BinaryReader {
     case .uint8:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt8) in Voxel(value: Float(value)) }
-    case .uint16:
+    case .int16:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt16) in Voxel(value: Float(value)) }
-    case .uint32:
+        .map { (value: Int16) in Voxel(value: Float(value)) }
+    case .int32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
-        .map { (value: UInt32) in Voxel(value: Float(value)) }
+        .map { (value: Int32) in Voxel(value: Float(value)) }
     case .float32:
       return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: Float32) in
           let newValue = (value / Float32.greatestFiniteMagnitude) * 255
           return Voxel(value: Float(newValue))
         }
-    default:
+    case .int8:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: Int8) in Voxel(value: Float(value)) }
+    case .uint16:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt16) in Voxel(value: Float(value)) }
+    case .uint32:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt32) in Voxel(value: Float(value)) }
+    case .int64:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: Int64) in Voxel(value: Float(value)) }
+    case .uint64:
+      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+        .map { (value: UInt64) in Voxel(value: Float(value)) }
+    case .float64, .rgb24, .float128, .complex64, .complex128, .complex256, .rgba32:
       throw NiftiV1Error.unsupportedDataFormat
     }
   }
