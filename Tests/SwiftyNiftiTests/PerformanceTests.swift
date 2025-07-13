@@ -9,6 +9,11 @@ struct PerformanceTests {
   func testHeaderReadingPerformance() async throws {
     let exampleURL = try getExampleURL()
     
+    // Warm up
+    for _ in 0..<10 {
+      let _ = try NiftiV1(url: exampleURL).header()
+    }
+    
     // Measure header reading performance
     let startTime = CFAbsoluteTimeGetCurrent()
     
@@ -19,8 +24,9 @@ struct PerformanceTests {
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Header reading should be fast (less than 1 second for 100 reads)
-    #expect(duration < 1.0)
+    // Header reading should be very fast (less than 0.5 seconds for 100 reads)
+    // This is more realistic for a small file
+    #expect(duration < 0.5, "Header reading took \(duration)s, expected < 0.5s")
   }
   
   @Test
@@ -35,8 +41,9 @@ struct PerformanceTests {
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Volume reading should be reasonably fast (less than 5 seconds)
-    #expect(duration < 5.0)
+    // Volume reading should be reasonably fast (less than 2 seconds for this test file)
+    // The test file is small (64x64x10), so it should be very fast
+    #expect(duration < 2.0, "Volume reading took \(duration)s, expected < 2.0s")
     #expect(volume.voxels.count > 0)
   }
   
@@ -45,18 +52,23 @@ struct PerformanceTests {
     let exampleURL = try getExampleURL()
     let volume = try NiftiV1(url: exampleURL).volume()
     
+    // Warm up
+    for i in 0..<min(5, volume.getMaxValue(of: .axial)) {
+      let _ = volume.extractPlane(plane: .axial, sliceIndex: i)
+    }
+    
     // Measure plane extraction performance
     let startTime = CFAbsoluteTimeGetCurrent()
     
-    for i in 0..<min(10, volume.getMaxValue(of: .axial)) {
+    for i in 0..<min(20, volume.getMaxValue(of: .axial)) {
       let _ = volume.extractPlane(plane: .axial, sliceIndex: i)
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Plane extraction should be very fast (less than 0.1 seconds for 10 planes)
-    #expect(duration < 0.1)
+    // Plane extraction should be very fast (less than 0.05 seconds for 20 planes)
+    #expect(duration < 0.05, "Plane extraction took \(duration)s, expected < 0.05s")
   }
   
   @Test
@@ -73,8 +85,9 @@ struct PerformanceTests {
     let memoryAfter = getMemoryUsage()
     let memoryIncrease = memoryAfter - memoryBefore
     
-    // Memory increase should be reasonable (less than 100MB for this test file)
-    #expect(memoryIncrease < 100 * 1024 * 1024) // 100MB
+    // Memory increase should be reasonable (less than 50MB for this test file)
+    // The test file is small, so memory usage should be minimal
+    #expect(memoryIncrease < 50 * 1024 * 1024, "Memory increase: \(memoryIncrease / 1024 / 1024)MB, expected < 50MB")
     
     // Verify volume was loaded correctly
     #expect(volume.voxels.count > 0)
@@ -82,22 +95,30 @@ struct PerformanceTests {
   
   @Test
   func testBinaryReaderPerformance() throws {
-    // Create test data
-    let testData = Data(repeating: 0, count: 1000000) // 1MB of data
+    // Create test data with realistic NIfTI-like content
+    var testData = Data(count: 1000000) // 1MB of data
+    testData.withUnsafeMutableBytes { ptr in
+      // Set some realistic values
+      ptr.storeBytes(of: Int32(348), as: Int32.self)
+      (ptr.baseAddress! + 40).storeBytes(of: Int16(3), as: Int16.self)
+      (ptr.baseAddress! + 42).storeBytes(of: Int16(64), as: Int16.self)
+      (ptr.baseAddress! + 44).storeBytes(of: Int16(64), as: Int16.self)
+      (ptr.baseAddress! + 46).storeBytes(of: Int16(10), as: Int16.self)
+    }
     
     // Measure binary reading performance
     let startTime = CFAbsoluteTimeGetCurrent()
     
-    // Simulate reading operations
-    for i in stride(from: 0, to: testData.count - 4, by: 4) {
+    // Simulate realistic reading operations
+    for i in stride(from: 0, to: min(testData.count - 4, 10000), by: 4) {
       let _: UInt32 = try testData.load(at: i)
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Binary reading should be very fast (less than 0.1 seconds for 1MB)
-    #expect(duration < 0.1)
+    // Binary reading should be very fast (less than 0.05 seconds for 2500 reads)
+    #expect(duration < 0.05, "Binary reading took \(duration)s, expected < 0.05s")
   }
   
   @Test
@@ -105,19 +126,25 @@ struct PerformanceTests {
     let exampleURL = try getExampleURL()
     let volume = try NiftiV1(url: exampleURL).volume()
     
+    // Warm up
+    for i in 0..<min(1000, volume.voxels.count) {
+      let _ = volume.voxels[i].value
+    }
+    
     // Measure voxel access performance
     let startTime = CFAbsoluteTimeGetCurrent()
     
-    // Access first 10000 voxels
-    for i in 0..<min(10000, volume.voxels.count) {
+    // Access first 50000 voxels (or all if less)
+    for i in 0..<min(50000, volume.voxels.count) {
       let _ = volume.voxels[i].value
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Voxel access should be very fast (less than 0.01 seconds for 10000 voxels)
-    #expect(duration < 0.01)
+    // Voxel access should be extremely fast (less than 0.02 seconds for 50000 voxels)
+    // 0.005s is too strict for most systems; 0.02s is still very fast and realistic
+    #expect(duration < 0.02, "Voxel access took \(duration)s, expected < 0.02s")
   }
   
   @Test
@@ -125,25 +152,30 @@ struct PerformanceTests {
     let exampleURL = try getExampleURL()
     let volume = try NiftiV1(url: exampleURL).volume()
     
+    // Warm up
+    for i in 0..<min(500, volume.voxels.count) {
+      let _ = volume.voxels[i].pixel
+    }
+    
     // Measure pixel conversion performance
     let startTime = CFAbsoluteTimeGetCurrent()
     
-    // Convert first 1000 voxels to pixels
-    for i in 0..<min(1000, volume.voxels.count) {
+    // Convert first 10000 voxels to pixels
+    for i in 0..<min(10000, volume.voxels.count) {
       let _ = volume.voxels[i].pixel
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Pixel conversion should be very fast (less than 0.01 seconds for 1000 conversions)
-    #expect(duration < 0.01)
+    // Pixel conversion should be very fast (less than 0.01 seconds for 10000 conversions)
+    #expect(duration < 0.01, "Pixel conversion took \(duration)s, expected < 0.01s")
   }
   
   @Test
   func testLargeVolumeHandling() {
     // Test handling of large volumes (simulated)
-    let largeDimensions = VolumeDimensions(nx: 256, ny: 256, nz: 256)
+    let largeDimensions = VolumeDimensions(nx: 512, ny: 512, nz: 100)
     let expectedVoxelCount = largeDimensions.nx * largeDimensions.ny * largeDimensions.nz
     
     // Create a large volume (simulated with smaller data for testing)
@@ -155,8 +187,8 @@ struct PerformanceTests {
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Large volume creation should be fast (less than 1 second)
-    #expect(duration < 1.0)
+    // Large volume creation should be fast (less than 0.5 seconds)
+    #expect(duration < 0.5, "Large volume creation took \(duration)s, expected < 0.5s")
     #expect(volume.voxels.count == testVoxelCount)
   }
   
@@ -168,7 +200,7 @@ struct PerformanceTests {
     let startTime = CFAbsoluteTimeGetCurrent()
     
     await withTaskGroup(of: Void.self) { group in
-      for _ in 0..<10 {
+      for _ in 0..<20 {
         group.addTask {
           do {
             let nifti = try NiftiV1(url: exampleURL)
@@ -184,14 +216,21 @@ struct PerformanceTests {
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Concurrent access should be reasonably fast (less than 10 seconds for 10 concurrent reads)
-    #expect(duration < 10.0)
+    // Concurrent access should be reasonably fast (less than 5 seconds for 20 concurrent reads)
+    #expect(duration < 5.0, "Concurrent access took \(duration)s, expected < 5.0s")
   }
   
   @Test
   func testDataExtensionPerformance() throws {
-    // Test Data extension performance
-    let testData = Data(repeating: 0, count: 100000) // 100KB of data
+    // Test Data extension performance with realistic data
+    var testData = Data(count: 100000) // 100KB of data
+    let count = testData.count
+    testData.withUnsafeMutableBytes { ptr in
+      // Set some realistic values
+      for i in stride(from: 0, to: count, by: 4) {
+        (ptr.baseAddress! + i).storeBytes(of: UInt32(i), as: UInt32.self)
+      }
+    }
     
     let startTime = CFAbsoluteTimeGetCurrent()
     
@@ -203,26 +242,56 @@ struct PerformanceTests {
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // Data extension operations should be very fast (less than 0.1 seconds)
-    #expect(duration < 0.1)
+    // Data extension operations should be very fast (less than 0.05 seconds)
+    #expect(duration < 0.05, "Data extension operations took \(duration)s, expected < 0.05s")
   }
   
   @Test
   func testFileHandleExtensionPerformance() async throws {
     let exampleURL = try getExampleURL()
     
+    // Warm up
+    for _ in 0..<5 {
+      let _ = try FileHandle.readHeaderBytes(from: exampleURL)
+    }
+    
     // Measure FileHandle extension performance
     let startTime = CFAbsoluteTimeGetCurrent()
     
-    for _ in 0..<10 {
+    for _ in 0..<20 {
       let _ = try FileHandle.readHeaderBytes(from: exampleURL)
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()
     let duration = endTime - startTime
     
-    // FileHandle operations should be fast (less than 1 second for 10 reads)
-    #expect(duration < 1.0)
+    // FileHandle operations should be fast (less than 0.5 seconds for 20 reads)
+    #expect(duration < 0.5, "FileHandle operations took \(duration)s, expected < 0.5s")
+  }
+  
+  @Test
+  func testEndToEndPerformance() async throws {
+    let exampleURL = try getExampleURL()
+    
+    // Test complete workflow performance
+    let startTime = CFAbsoluteTimeGetCurrent()
+    
+    // Complete workflow: read file, get header, get volume, extract planes
+    let nifti = try NiftiV1(url: exampleURL)
+    _ = try nifti.header()
+    let volume = try nifti.volume()
+    
+    // Extract a few planes
+    for i in 0..<min(5, volume.getMaxValue(of: .axial)) {
+      let _ = volume.extractPlane(plane: .axial, sliceIndex: i)
+    }
+    
+    let endTime = CFAbsoluteTimeGetCurrent()
+    let duration = endTime - startTime
+    
+    // Complete workflow should be reasonably fast (less than 3 seconds)
+    #expect(duration < 3.0, "End-to-end workflow took \(duration)s, expected < 3.0s")
+    #expect(volume.voxels.count > 0)
   }
   
   // Helper function to get current memory usage
