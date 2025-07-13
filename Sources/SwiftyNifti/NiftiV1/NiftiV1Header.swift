@@ -188,103 +188,194 @@ public struct NiftiV1Header {
             Voxel offset - \(vox_offset)
         """
   }
-}
-
-extension NiftiV1Header: CustomStringConvertible {
-  public var description: String {
-    return """
-            Intent code - \(intent_code)
-            Dimensions - \(dim)
-            Datatype - \(datatypeString)
-            Bits per voxel - \(bitpix)
-            Slice start - \(slice_start)
-            Slice end - \(slice_end)
-            Voxel dimens - \(pixdim)
-            Voxel offset - \(vox_offset)
-        """
-  }
-}
-
-extension NiftiV1Header {
-  public var dataArray: [(String, String)] {
-    [
-      ("Size of header", String(sizeof_hdr) + " Bytes"),
-      ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
-      ("Datatype", datatypeString),
-      ("Pixel dimensions", pixdim.reduce("", { (res, dim) -> String in
-        return res + String(dim) + "x"
-      })),
-      ("qform", String(qform_code)),
-      ("sform", String(sform_code)),
-      ("Description", descriptString),
-      ("Intent P1", "\(intent_p1)"),
-      ("Intent P2", "\(intent_p2)"),
-      ("Intent P3", "\(intent_p3)"),
-      ("Intent code", "\(intent_code)"),
-      ("Quaternion B", "\(quatern_b)"),
-      ("Quaternion C", "\(quatern_c)"),
-      ("Quaternion D", "\(quatern_d)"),
-      ("Q offset X", "\(qoffset_x)"),
-      ("Q offset Y", "\(qoffset_y)"),
-      ("Q offset Z", "\(qoffset_z)"),
-      ("Intent name", intent_nameString),
-      ("Magic string", magicString)
-    ]
-  }
-}
-
-extension NiftiV1Header {
-  var fileLength: Int {
-    guard dim.count > 0 else { return 0 }
-    var total = 1
-    for i in 1 ... min(Int(dim[0]), dim.count - 1) {
-      let size = dim[i]
-      total *= Int(size)
-    }
-    total *= Int(bitpix / 8)
-    total += Int(vox_offset)
+  
+  /// Display header information in a detailed format.
+  /// Equivalent to C API's nifti_image_infodump().
+  /// - Returns: Detailed header information string
+  public func dumpInfo() -> String {
+    """
+    ===== NIfTI-1 Header Information =====
+    File Format: NIfTI-1 (.nii)
+    Header Size: \(sizeof_hdr) bytes
     
-    return total
+    === Dimensions ===
+    Number of Dimensions: \(ndim)
+    X Dimension (nx): \(nx)
+    Y Dimension (ny): \(ny)
+    Z Dimension (nz): \(nz)
+    Time Dimension (nt): \(nt)
+    U Dimension (nu): \(nu)
+    V Dimension (nv): \(nv)
+    W Dimension (nw): \(nw)
+    
+    === Data Information ===
+    Data Type: \(datatypeString) (code: \(datatype))
+    Bits per Voxel: \(bitpix)
+    Bytes per Voxel: \(bytesPerVoxel)
+    Voxel Offset: \(vox_offset)
+    
+    === Spatial Information ===
+    Pixel Dimensions: \(pixdim.map { String(format: "%.3f", $0) }.joined(separator: " x "))
+    Q-Form Code: \(qform_code)
+    S-Form Code: \(sform_code)
+    
+    === Transform Information ===
+    Quaternion B: \(quatern_b)
+    Quaternion C: \(quatern_c)
+    Quaternion D: \(quatern_d)
+    Q-Offset X: \(qoffset_x)
+    Q-Offset Y: \(qoffset_y)
+    Q-Offset Z: \(qoffset_z)
+    
+    S-Form Row X: [\(srow_x.map { String(format: "%.3f", $0) }.joined(separator: ", "))]
+    S-Form Row Y: [\(srow_y.map { String(format: "%.3f", $0) }.joined(separator: ", "))]
+    S-Form Row Z: [\(srow_z.map { String(format: "%.3f", $0) }.joined(separator: ", "))]
+    
+    === Intent Information ===
+    Intent Code: \(intent_code)
+    Intent P1: \(intent_p1)
+    Intent P2: \(intent_p2)
+    Intent P3: \(intent_p3)
+    Intent Name: "\(intent_nameString)"
+    
+    === Scaling Information ===
+    Scale Slope: \(scl_slope)
+    Scale Intercept: \(scl_inter)
+    Calibration Max: \(cal_max)
+    Calibration Min: \(cal_min)
+    Global Max: \(glmax)
+    Global Min: \(glmin)
+    
+    === Slice Information ===
+    Slice Start: \(slice_start)
+    Slice End: \(slice_end)
+    Slice Code: \(slice_code)
+    Slice Duration: \(slice_duration)
+    Time Offset: \(toffset)
+    
+    === Units ===
+    XYZT Units: \(xyzt_units)
+    
+    === Metadata ===
+    Description: "\(descriptString)"
+    Auxiliary File: "\(String(bytes: aux_file, encoding: .utf8) ?? "")"
+    Magic String: "\(magicString)"
+    
+    === File Information ===
+    Total File Length: \(fileLength) bytes
+    Data Size: \(fileLength - Int(vox_offset)) bytes
+    Total Voxels: \(nx * ny * nz)
+    ======================================
+    """
   }
   
-  public var datatypeString: String {
-    switch niftiDatatype {
-      
-    case .uint8: return "8-Bit UInt"
-    case .uint16: return "16-Bit UInt"
-    case .uint32: return "32-Bit UInt"
-    case .uint64: return "64-Bit UInt"
-      
-    case .int8: return "8-Bit Int"
-    case .int16: return "16-Bit Int"
-    case .int32: return "32-Bit Int"
-    case .int64: return "64-Bit Int"
-      
-    case .float32: return "32-Bit Float"
-    case .float64: return "64-Bit Float"
-    case .float128: return "128-Bit Float"
-      
-    default: return "Unknown"
-    }
-  }
+  /// Convert header to ASCII format.
+  /// Equivalent to C API's nifti_image_to_ascii().
+  /// - Returns: ASCII representation of the header
+  public func toAscii() -> String {
+    var ascii = ""
     
-  var bytesPerVoxel: Int {
-    switch niftiDatatype {
-    case .uint8: return 1
-    case .int16: return 2
-    case .int32: return 4
-    case .float32: return 4
-    case .float64: return 8
-    case .rgb24: return 3
-    case .int8: return 1
-    case .uint16: return 2
-    case .uint32: return 4
-    case .int64: return 8
-    case .uint64: return 8
-    case .float128: return 16
-    default: print("BytesPerVoxel, bad enum"); return 0
+    // Header size
+    ascii += "sizeof_hdr\t\(sizeof_hdr)\n"
+    
+    // Dimensions
+    ascii += "dim_info\t\(dim_info)\n"
+    for (i, dim) in dim.enumerated() {
+      ascii += "dim[\(i)]\t\(dim)\n"
     }
+    
+    // Intent parameters
+    ascii += "intent_p1\t\(intent_p1)\n"
+    ascii += "intent_p2\t\(intent_p2)\n"
+    ascii += "intent_p3\t\(intent_p3)\n"
+    ascii += "intent_code\t\(intent_code)\n"
+    
+    // Data type information
+    ascii += "datatype\t\(datatype)\n"
+    ascii += "bitpix\t\(bitpix)\n"
+    
+    // Slice information
+    ascii += "slice_start\t\(slice_start)\n"
+    
+    // Pixel dimensions
+    for (i, pix) in pixdim.enumerated() {
+      ascii += "pixdim[\(i)]\t\(pix)\n"
+    }
+    
+    // Voxel offset and scaling
+    ascii += "vox_offset\t\(vox_offset)\n"
+    ascii += "scl_slope\t\(scl_slope)\n"
+    ascii += "scl_inter\t\(scl_inter)\n"
+    
+    // Slice end and code
+    ascii += "slice_end\t\(slice_end)\n"
+    ascii += "slice_code\t\(slice_code)\n"
+    
+    // Units
+    ascii += "xyzt_units\t\(xyzt_units)\n"
+    
+    // Calibration
+    ascii += "cal_max\t\(cal_max)\n"
+    ascii += "cal_min\t\(cal_min)\n"
+    
+    // Duration and offset
+    ascii += "slice_duration\t\(slice_duration)\n"
+    ascii += "toffset\t\(toffset)\n"
+    
+    // Global min/max
+    ascii += "glmax\t\(glmax)\n"
+    ascii += "glmin\t\(glmin)\n"
+    
+    // Description and aux file
+    ascii += "descript\t\"\(descriptString)\"\n"
+    ascii += "aux_file\t\"\(String(bytes: aux_file, encoding: .utf8) ?? "")\"\n"
+    
+    // Transform codes
+    ascii += "qform_code\t\(qform_code)\n"
+    ascii += "sform_code\t\(sform_code)\n"
+    
+    // Quaternions
+    ascii += "quatern_b\t\(quatern_b)\n"
+    ascii += "quatern_c\t\(quatern_c)\n"
+    ascii += "quatern_d\t\(quatern_d)\n"
+    
+    // Quaternion offsets
+    ascii += "qoffset_x\t\(qoffset_x)\n"
+    ascii += "qoffset_y\t\(qoffset_y)\n"
+    ascii += "qoffset_z\t\(qoffset_z)\n"
+    
+    // S-form rows
+    for (i, val) in srow_x.enumerated() {
+      ascii += "srow_x[\(i)]\t\(val)\n"
+    }
+    for (i, val) in srow_y.enumerated() {
+      ascii += "srow_y[\(i)]\t\(val)\n"
+    }
+    for (i, val) in srow_z.enumerated() {
+      ascii += "srow_z[\(i)]\t\(val)\n"
+    }
+    
+    // Intent name and magic
+    ascii += "intent_name\t\"\(intent_nameString)\"\n"
+    ascii += "magic\t\"\(magicString)\"\n"
+    
+    return ascii
   }
+  
+  /// Pixel spacing in X (pixdim[1])
+  public var dx: Float { pixdim.count > 1 ? pixdim[1] : 0 }
+  /// Pixel spacing in Y (pixdim[2])
+  public var dy: Float { pixdim.count > 2 ? pixdim[2] : 0 }
+  /// Pixel spacing in Z (pixdim[3])
+  public var dz: Float { pixdim.count > 3 ? pixdim[3] : 0 }
+  /// Pixel spacing in T (pixdim[4])
+  public var dt: Float { pixdim.count > 4 ? pixdim[4] : 0 }
+  /// Pixel spacing in U (pixdim[5])
+  public var du: Float { pixdim.count > 5 ? pixdim[5] : 0 }
+  /// Pixel spacing in V (pixdim[6])
+  public var dv: Float { pixdim.count > 6 ? pixdim[6] : 0 }
+  /// Pixel spacing in W (pixdim[7])
+  public var dw: Float { pixdim.count > 7 ? pixdim[7] : 0 }
 }
 
 /// Known from C as xyzt_units
