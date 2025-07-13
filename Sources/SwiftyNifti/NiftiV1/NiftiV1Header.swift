@@ -1,79 +1,193 @@
+/// Represents the header of a NIfTI-1 file, containing metadata and dimension info.
 public struct NiftiV1Header {
-  
-  public var sizeof_hdr: Int32 = 0 // 0 offset
+  /// Size of the header (should be 348 for NIfTI-1)
+  public var sizeof_hdr: Int32 = 0
+  /// Encodes MRI slice ordering and timing
   public var dim_info: UInt8 = 0
-
+  /// NIfTI dimension array (dim[0] = ndim, dim[1] = nx, ...)
+  public var dim: [Int16] = []
+  /// Number of dimensions
   public var ndim: Int { get { Int(dim[0]) } set { dim[0] = Int16(newValue) } }
+  /// X dimension size
   public var nx: Int { Int(dim[1]) }
+  /// Y dimension size
   public var ny: Int { Int(dim[2]) }
+  /// Z dimension size
   public var nz: Int { Int(dim[3]) }
+  /// T dimension size
   public var nt: Int16 { get { dim[4] } set { dim[4] = newValue } }
+  /// U dimension size
   public var nu: Int16 { get { dim[5] } set { dim[5] = newValue } }
+  /// V dimension size
   public var nv: Int16 { get { dim[6] } set { dim[6] = newValue } }
+  /// W dimension size
   public var nw: Int16 { get { dim[7] } set { dim[7] = newValue } }
-  public var dim: [Int16] = [] // 40
+  /// Volume dimensions (nx, ny, nz)
   public var dimensions: VolumeDimensions {
     VolumeDimensions(nx: nx, ny: ny, nz: nz)
   }
-  
+  /// Intent parameters (meaning depends on intent_code)
   public var intent_p1: Float = 0
   public var intent_p2: Float = 0
   public var intent_p3: Float = 0
+  /// NIfTI intent code
   public var intent_code: Int16 = 0
-  
-  public var niftiDatatype: DataType { DataType(rawValue: datatype) ?? .uint8 }
-  public var datatype: Int16 = 0 //70
+  /// Data type (see DataType enum)
+  public var datatype: Int16 = 0
+  /// Bits per voxel
   public var bitpix: Int16 = 0
+  /// Slice start index
   public var slice_start: Int16 = 0
-  
-  public var dx: Float { pixdim.count > 1 ? pixdim[1] * Float(nx) : 0 }
-  public var dy: Float { pixdim.count > 2 ? pixdim[2] * Float(ny) : 0 }
-  public var dz: Float { pixdim.count > 3 ? pixdim[3] * Float(nz) : 0 }
-  public var dt: Float { pixdim.count > 4 ? pixdim[4] * Float(nt) : 0 }
-  public var du: Float { pixdim.count > 5 ? pixdim[5] * Float(nu) : 0 }
-  public var dv: Float { pixdim.count > 6 ? pixdim[6] * Float(nv) : 0 }
-  public var dw: Float { pixdim.count > 7 ? pixdim[7] * Float(nw) : 0 }
+  /// Pixel dimensions (pixdim[1] = dx, ...)
   public var pixdim: [Float] = []
-  
-  public var nvox: Int = 0
+  /// Voxel offset (start of data)
   public var vox_offset: Float = 0
+  /// Data scaling slope
   public var scl_slope: Float = 0
+  /// Data scaling intercept
   public var scl_inter: Float = 0
+  /// Slice end index
   public var slice_end: Int16 = 0
+  /// Slice code
   public var slice_code: UInt8 = 0
+  /// Units for x/y/z/t
   public var xyzt_units: UInt8 = 0
+  /// Calibration max
   public var cal_max: Float = 0
+  /// Calibration min
   public var cal_min: Float = 0
+  /// Slice duration
   public var slice_duration: Float = 0
+  /// Time offset
   public var toffset: Float = 0
-  
+  /// Global max
   public var glmax: Int32 = 0
+  /// Global min
   public var glmin: Int32 = 0
-  
+  /// Description string (80 bytes)
   public var descript: [UInt8] = []
+  /// Description as String
   public var descriptString: String { String(bytes: descript, encoding: .utf8) ?? ""}
-  
+  /// Auxiliary file (24 bytes)
   public var aux_file: [UInt8] = []
-  
+  /// Qform code (spatial transform)
   public var qform_code: Int16 = 0
+  /// Sform code (spatial transform)
   public var sform_code: Int16 = 0
-  
+  /// Quaternion b
   public var quatern_b: Float = 0
+  /// Quaternion c
   public var quatern_c: Float = 0
+  /// Quaternion d
   public var quatern_d: Float = 0
+  /// Quaternion x offset
   public var qoffset_x: Float = 0
+  /// Quaternion y offset
   public var qoffset_y: Float = 0
+  /// Quaternion z offset
   public var qoffset_z: Float = 0
-  
+  /// Sform row x
   public var srow_x: [Float] = []
+  /// Sform row y
   public var srow_y: [Float] = []
+  /// Sform row z
   public var srow_z: [Float] = []
-
+  /// Intent name (16 bytes)
   public var intent_name: [UInt8] = []
+  /// Intent name as String
   public var intent_nameString: String { String(bytes: intent_name, encoding: .utf8) ?? ""}
-  
+  /// Magic string (4 bytes)
   public var magic: [UInt8] = []
+  /// Magic as String
   public var magicString: String { String(bytes: magic, encoding: .utf8) ?? ""}
+  /// Data type as enum
+  public var niftiDatatype: DataType { DataType(rawValue: datatype) ?? .uint8 }
+  /// Bytes per voxel
+  public var bytesPerVoxel: Int {
+    switch niftiDatatype {
+    case .uint8: return 1
+    case .int16: return 2
+    case .int32: return 4
+    case .float32: return 4
+    case .float64: return 8
+    case .rgb24: return 3
+    case .int8: return 1
+    case .uint16: return 2
+    case .uint32: return 4
+    case .int64: return 8
+    case .uint64: return 8
+    case .float128: return 16
+    default: return 0
+    }
+  }
+  /// File length in bytes (header + data)
+  public var fileLength: Int {
+    guard dim.count > 0 else { return 0 }
+    var total = 1
+    for i in 1 ... min(Int(dim[0]), dim.count - 1) {
+      let size = dim[i]
+      total *= Int(size)
+    }
+    total *= Int(bitpix / 8)
+    total += Int(vox_offset)
+    return total
+  }
+  /// Data type as string
+  public var datatypeString: String {
+    switch niftiDatatype {
+    case .uint8: return "8-Bit UInt"
+    case .uint16: return "16-Bit UInt"
+    case .uint32: return "32-Bit UInt"
+    case .uint64: return "64-Bit UInt"
+    case .int8: return "8-Bit Int"
+    case .int16: return "16-Bit Int"
+    case .int32: return "32-Bit Int"
+    case .int64: return "64-Bit Int"
+    case .float32: return "32-Bit Float"
+    case .float64: return "64-Bit Float"
+    case .float128: return "128-Bit Float"
+    default: return "Unknown"
+    }
+  }
+  /// Data array for display (field name, value)
+  public var dataArray: [(String, String)] {
+    [
+      ("Size of header", String(sizeof_hdr) + " Bytes"),
+      ("Dimension sizes", "\(ndim) x \(nx) x \(ny) x \(nz) x \(nt) x \(nu) x \(nv) x \(nw)"),
+      ("Datatype", datatypeString),
+      ("Pixel dimensions", pixdim.reduce("", { (res, dim) -> String in
+        return res + String(dim) + "x"
+      })),
+      ("qform", String(qform_code)),
+      ("sform", String(sform_code)),
+      ("Description", descriptString),
+      ("Intent P1", "\(intent_p1)"),
+      ("Intent P2", "\(intent_p2)"),
+      ("Intent P3", "\(intent_p3)"),
+      ("Intent code", "\(intent_code)"),
+      ("Quaternion B", "\(quatern_b)"),
+      ("Quaternion C", "\(quatern_c)"),
+      ("Quaternion D", "\(quatern_d)"),
+      ("Q offset X", "\(qoffset_x)"),
+      ("Q offset Y", "\(qoffset_y)"),
+      ("Q offset Z", "\(qoffset_z)"),
+      ("Intent name", intent_nameString),
+      ("Magic string", magicString)
+    ]
+  }
+  /// Human-readable description
+  public var description: String {
+    return """
+            Intent code - \(intent_code)
+            Dimensions - \(dim)
+            Datatype - \(datatypeString)
+            Bits per voxel - \(bitpix)
+            Slice start - \(slice_start)
+            Slice end - \(slice_end)
+            Voxel dimens - \(pixdim)
+            Voxel offset - \(vox_offset)
+        """
+  }
 }
 
 extension NiftiV1Header: CustomStringConvertible {
