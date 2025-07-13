@@ -21,18 +21,18 @@ public struct NiftiV1Header {
   public var intent_p3: Float = 0
   public var intent_code: Int16 = 0
   
-  public var niftiDatatype: DataType { DataType(rawValue: datatype)! }
+  public var niftiDatatype: DataType { DataType(rawValue: datatype) ?? .uint8 }
   public var datatype: Int16 = 0 //70
   public var bitpix: Int16 = 0
   public var slice_start: Int16 = 0
   
-  public var dx: Float { pixdim[1] * Float(nx) }
-  public var dy: Float { pixdim[2] * Float(ny) }
-  public var dz: Float { pixdim[3] * Float(nz) }
-  public var dt: Float { pixdim[4] * Float(nt) }
-  public var du: Float { pixdim[5] * Float(nu) }
-  public var dv: Float { pixdim[6] * Float(nv) }
-  public var dw: Float { pixdim[7] * Float(nw) }
+  public var dx: Float { pixdim.count > 1 ? pixdim[1] * Float(nx) : 0 }
+  public var dy: Float { pixdim.count > 2 ? pixdim[2] * Float(ny) : 0 }
+  public var dz: Float { pixdim.count > 3 ? pixdim[3] * Float(nz) : 0 }
+  public var dt: Float { pixdim.count > 4 ? pixdim[4] * Float(nt) : 0 }
+  public var du: Float { pixdim.count > 5 ? pixdim[5] * Float(nu) : 0 }
+  public var dv: Float { pixdim.count > 6 ? pixdim[6] * Float(nv) : 0 }
+  public var dw: Float { pixdim.count > 7 ? pixdim[7] * Float(nw) : 0 }
   public var pixdim: [Float] = []
   
   public var nvox: Int = 0
@@ -121,8 +121,9 @@ extension NiftiV1Header {
 
 extension NiftiV1Header {
   var fileLength: Int {
+    guard dim.count > 0 else { return 0 }
     var total = 1
-    for i in 1 ... Int(dim[0]) {
+    for i in 1 ... min(Int(dim[0]), dim.count - 1) {
       let size = dim[i]
       total *= Int(size)
     }
