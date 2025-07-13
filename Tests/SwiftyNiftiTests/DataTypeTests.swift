@@ -190,7 +190,7 @@ struct DataTypeTests {
   }
   
   @Test
-  func testDataExtensions() {
+  func testDataExtensions() throws {
     // Test Data extensions for binary reading
     let testData = Data([0x01, 0x02, 0x03, 0x04])
     
@@ -200,16 +200,16 @@ struct DataTypeTests {
     #expect(swapped != testData)
     
     // Test loading single value
-    let uint8Value: UInt8 = testData.load(at: 0)
+    let uint8Value: UInt8 = try testData.load(at: 0)
     #expect(uint8Value == 0x01)
   }
   
   @Test
-  func testDataVectorLoading() {
+  func testDataVectorLoading() throws {
     let testData = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     
     // Test loading vector of UInt8
-    let uint8Vector: [UInt8] = testData.loadVector(length: 4, isByteSwapped: false)
+    let uint8Vector: [UInt8] = try testData.loadVector(length: 4, isByteSwapped: false)
     #expect(uint8Vector.count == 4)
     #expect(uint8Vector[0] == 0x01)
     #expect(uint8Vector[1] == 0x02)

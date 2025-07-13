@@ -14,7 +14,7 @@ final class NiftiV1BinaryReader: BinaryReader {
     var hdr = NiftiV1.Header()
     
     //Checking endianess
-    var sizeOfHdr: Int32 = readValue(at: 0)
+    var sizeOfHdr: Int32 = try readValue(at: 0)
     if sizeOfHdr != 348 {
       isByteSwapped = true
       sizeOfHdr = sizeOfHdr.byteSwapped
@@ -26,94 +26,94 @@ final class NiftiV1BinaryReader: BinaryReader {
     
     hdr.sizeof_hdr = sizeOfHdr
     ///Byte offset - 39 dim_info
-    hdr.dim_info = readValue(at: 39)
+    hdr.dim_info = try readValue(at: 39)
     ///Byte offset - 40 - dimensions
-    hdr.dim = readVector(at: 40, length: 8)
+    hdr.dim = try readVector(at: 40, length: 8)
     try updateDimsFromArray(dims: &hdr.dim)
     ///Byte offset - 56 - intent_p1
-    hdr.intent_p1 = readValue(at: 58)
+    hdr.intent_p1 = try readValue(at: 58)
     ///Byte offset - 60 - intent_p2
-    hdr.intent_p2 = readValue(at: 60)
+    hdr.intent_p2 = try readValue(at: 60)
     ///Byte offset - 64 - intent_p3
-    hdr.intent_p3 = readValue(at: 64)
+    hdr.intent_p3 = try readValue(at: 64)
     
     ///Byte offset - 68 - Intent code
-    hdr.intent_code = readValue(at: 68)
+    hdr.intent_code = try readValue(at: 68)
     //////Byte offset - 70 - Data type
-    hdr.datatype = readValue(at: 70)
+    hdr.datatype = try readValue(at: 70)
     ///Byte offset - 72 - Bit pix
-    hdr.bitpix = readValue(at: 72)
+    hdr.bitpix = try readValue(at: 72)
     //////Byte offset - 74 - slice_start
-    hdr.slice_start = readValue(at: 74)
+    hdr.slice_start = try readValue(at: 74)
     
     ///Byte offset - 76 - pixdim
-    hdr.pixdim = readVector(at: 76, length: 8)
+    hdr.pixdim = try readVector(at: 76, length: 8)
     
     ///Byte offset - 108 - vox_offset
-    hdr.vox_offset = readValue(at: 108)
+    hdr.vox_offset = try readValue(at: 108)
     
     ///Byte offset - 112 - scl_slope
-    hdr.scl_slope = readValue(at: 112)
+    hdr.scl_slope = try readValue(at: 112)
     ///Byte offset - 116 - scl_inter
-    hdr.scl_inter = readValue(at: 116)
+    hdr.scl_inter = try readValue(at: 116)
     ///Byte offset - 120 - slice_end
-    hdr.slice_end = readValue(at: 120)
+    hdr.slice_end = try readValue(at: 120)
     ///Byte offset - 122 - slice_code
-    hdr.slice_code = readValue(at: 122)
+    hdr.slice_code = try readValue(at: 122)
     
     ///Byte offset - 123 - xyzt_units
-    hdr.xyzt_units = readValue(at: 123)
+    hdr.xyzt_units = try readValue(at: 123)
     
     ///Byte offset - 124 - cal_max
-    hdr.cal_max = readValue(at: 124)
+    hdr.cal_max = try readValue(at: 124)
     ///Byte offset - 128 - cal_min
-    hdr.cal_min = readValue(at: 128)
+    hdr.cal_min = try readValue(at: 128)
     
     ///Byte offset - 132 - slice_duration
-    hdr.slice_duration = readValue(at: 132)
+    hdr.slice_duration = try readValue(at: 132)
     ///Byte offset - 136 - toffset
-    hdr.toffset = readValue(at: 136)
+    hdr.toffset = try readValue(at: 136)
     
     ///Byte offset - 140 - glmax int
-    hdr.glmax = readValue(at: 140)
+    hdr.glmax = try readValue(at: 140)
     ///Byte offset - 144 - glmin int
-    hdr.glmin = readValue(at: 144)
+    hdr.glmin = try readValue(at: 144)
     
     ///Byte offset - 148 - description [UInt8]
-    hdr.descript = readVector(at: 148, length: 80)
+    hdr.descript = try readVector(at: 148, length: 80)
     ///Byte offset - 228 - aux_file [UInt8]
-    hdr.aux_file = readVector(at: 228, length: 24)
+    hdr.aux_file = try readVector(at: 228, length: 24)
     
     ///Byte offset - 252 - qform_code
-    hdr.qform_code = readValue(at: 252)
+    hdr.qform_code = try readValue(at: 252)
     ///Byte offset - 254 - sform_code
-    hdr.sform_code = readValue(at: 254)
+    hdr.sform_code = try readValue(at: 254)
     
     ///Byte offset - 256 - quatern_b
-    hdr.quatern_b = readValue(at: 256)
+    hdr.quatern_b = try readValue(at: 256)
     ///Byte offset - 260 - quatern_c
-    hdr.quatern_c = readValue(at: 260)
+    hdr.quatern_c = try readValue(at: 260)
     ///Byte offset - 264 - quatern_d
-    hdr.quatern_d = readValue(at: 264)
+    hdr.quatern_d = try readValue(at: 264)
     ///Byte offset - 268 - qoffset_x
-    hdr.qoffset_x = readValue(at: 268)
+    hdr.qoffset_x = try readValue(at: 268)
     ///Byte offset - 272 - qoffset_y
-    hdr.qoffset_y = readValue(at: 272)
+    hdr.qoffset_y = try readValue(at: 272)
     ///Byte offset - 276 - qoffset_z
-    hdr.qoffset_z = readValue(at: 276)
+    hdr.qoffset_z = try readValue(at: 276)
     
     ///Byte offset - 280 - srow_x
-    hdr.srow_x = readVector(at: 280, length: 4)
+    hdr.srow_x = try readVector(at: 280, length: 4)
     ///Byte offset - 296 - srow_y
-    hdr.srow_y = readVector(at: 296, length: 4)
+    hdr.srow_y = try readVector(at: 296, length: 4)
     ///Byte offset - 312 - srow_z
-    hdr.srow_z = readVector(at: 312, length: 4)
+    hdr.srow_z = try readVector(at: 312, length: 4)
     
     ///Byte offset - 328 - intent_name
-    hdr.intent_name = readVector(at: 328, length: 16)
+    hdr.intent_name = try readVector(at: 328, length: 16)
     
     ///Byte offset - 344 - magic
-    hdr.magic = readVector(at: 344, length: 4)
+    hdr.magic = try readVector(at: 344, length: 4)
     
     return hdr
   }
@@ -156,16 +156,16 @@ final class NiftiV1BinaryReader: BinaryReader {
     }
     switch header.niftiDatatype {
     case .uint8:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt8) in Voxel(value: Float(value)) }
     case .uint16:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt16) in Voxel(value: Float(value)) }
     case .uint32:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt32) in Voxel(value: Float(value)) }
     case .float32:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: Float32) in
           let newValue = (value / Float32.greatestFiniteMagnitude) * 255
           return Voxel(value: Float(newValue))
@@ -185,16 +185,16 @@ final class NiftiV1BinaryReader: BinaryReader {
     }
     switch datatype {
     case .uint8:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt8) in Voxel(value: Float(value)) }
     case .uint16:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt16) in Voxel(value: Float(value)) }
     case .uint32:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: UInt32) in Voxel(value: Float(value)) }
     case .float32:
-      return volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
+      return try volumeData.loadVector(length: voxelCount, isByteSwapped: isByteSwapped)
         .map { (value: Float32) in
           let newValue = (value / Float32.greatestFiniteMagnitude) * 255
           return Voxel(value: Float(newValue))

@@ -153,24 +153,24 @@ struct ErrorHandlingTests {
   }
   
   @Test
-  func testDataLoadingErrors() {
+  func testDataLoadingErrors() throws {
     // Test Data extension error handling
     let testData = Data([0x01, 0x02, 0x03])
     
     // This should not throw an error in the current implementation
     // but we can test that it handles the data correctly
-    let value: UInt8 = testData.load(at: 0)
+    let value: UInt8 = try testData.load(at: 0)
     #expect(value == 0x01)
   }
   
   @Test
-  func testVectorLoadingErrors() {
+  func testVectorLoadingErrors() throws {
     // Test vector loading with invalid parameters
     let testData = Data([0x01, 0x02, 0x03, 0x04])
     
     // This should not throw an error in the current implementation
     // but we can test that it handles the data correctly
-    let values: [UInt8] = testData.loadVector(length: 4, isByteSwapped: false)
+    let values: [UInt8] = try testData.loadVector(length: 4, isByteSwapped: false)
     #expect(values.count == 4)
     #expect(values[0] == 0x01)
     #expect(values[1] == 0x02)

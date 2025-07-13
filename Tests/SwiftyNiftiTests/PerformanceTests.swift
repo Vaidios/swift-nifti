@@ -81,7 +81,7 @@ struct PerformanceTests {
   }
   
   @Test
-  func testBinaryReaderPerformance() {
+  func testBinaryReaderPerformance() throws {
     // Create test data
     let testData = Data(repeating: 0, count: 1000000) // 1MB of data
     
@@ -90,7 +90,7 @@ struct PerformanceTests {
     
     // Simulate reading operations
     for i in stride(from: 0, to: testData.count - 4, by: 4) {
-      let _: UInt32 = testData.load(at: i)
+      let _: UInt32 = try testData.load(at: i)
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()
@@ -189,7 +189,7 @@ struct PerformanceTests {
   }
   
   @Test
-  func testDataExtensionPerformance() {
+  func testDataExtensionPerformance() throws {
     // Test Data extension performance
     let testData = Data(repeating: 0, count: 100000) // 100KB of data
     
@@ -197,7 +197,7 @@ struct PerformanceTests {
     
     // Test vector loading performance
     for _ in 0..<100 {
-      let _: [UInt8] = testData.loadVector(length: 1000, isByteSwapped: false)
+      let _: [UInt8] = try testData.loadVector(length: 1000, isByteSwapped: false)
     }
     
     let endTime = CFAbsoluteTimeGetCurrent()

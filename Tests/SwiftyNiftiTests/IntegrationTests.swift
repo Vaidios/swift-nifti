@@ -188,7 +188,7 @@ struct IntegrationTests {
     
     let minValue = values.min() ?? 0
     let maxValue = values.max() ?? 0
-    let avgValue = values.reduce(0, +) / Double(values.count)
+    let avgValue = values.reduce(0, +) / Float(values.count)
     
     #expect(minValue.isFinite)
     #expect(maxValue.isFinite)
@@ -268,11 +268,11 @@ struct IntegrationTests {
         group.addTask {
           do {
             let nifti = try NiftiV1(url: exampleURL)
-            let header = try nifti.header()
+            let _ = try nifti.header()
             let volume = try nifti.volume()
             
             // Test plane extraction
-            let plane = volume.extractPlane(plane: .axial, sliceIndex: 0)
+            let _ = volume.extractPlane(plane: .axial, sliceIndex: 0)
             
             return (true, "Task \(i) completed successfully")
           } catch {
@@ -282,7 +282,7 @@ struct IntegrationTests {
       }
       
       // Collect results
-      for await (success, message) in group {
+      for await (success, _) in group {
         #expect(success)
       }
     }
